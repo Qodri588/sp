@@ -1,117 +1,78 @@
-# suno-prompting-app
+# Suno Prompting App
 
-Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts with genre/mood/instrument guidance and enforced formatting.
+Desktop app that turns plain-English song ideas into **Suno V5-ready** prompts with genre, mood, instrument guidance, and enforced formatting.
 
 [Quick Start](#quick-start) | [Configuration](#configuration) | [Features](#features) | [Modes](#modes) | [Genre Detection](#genre-detection) | [Reference](#reference) | [Architecture](#architecture) | [Tech Stack](#tech-stack) | [License](#license)
 
 ## Quick Start
 
-Prereq: [Bun](https://bun.sh/)
+Prerequisites: [Bun](https://bun.sh/)
 
 ```bash
 bun install
 bun start
 ```
 
-Run tests: `bun test` | Validate: `bun run validate`
+Run tests: `bun test` | Lint: `bun run lint` | Typecheck: `bun run typecheck` | Full validate: `bun run validate`
 
 <details>
 <summary><strong>Build Commands</strong></summary>
 
 | Command | Description |
 |---------|-------------|
-| `bun run build` | Development build |
+| `bun run build` | Development build (current platform) |
 | `bun run build:stable` | Production (current platform) |
 | `bun run build:stable:all` | Production (all platforms) |
 | `bun run build:macos` | macOS (Intel & Apple Silicon) |
 | `bun run build:linux` | Linux (x64) |
 | `bun run build:windows` | Windows (x64) |
+| `bun run web:dev` | Web development mode |
+| `bun run web:build` | Build for web |
 
 </details>
 
 ## Configuration
 
-Settings and API keys stored locally (encrypted with AES-256-GCM):
+Settings and API keys are stored locally (encrypted with AES-256-GCM):
 
 | Platform | Location |
 |----------|----------|
 | macOS/Linux | `~/.suno-prompting-app/config.json` |
-| Windows | `C:\Users\<username>\.suno-prompting-app\config.json` |
+| Windows | `%USERPROFILE%\.suno-prompting-app\config.json` |
 
 ### AI Providers
 
 | Provider | Models | Setup |
 |----------|--------|-------|
-| **Ollama (Local)** | Gemma 3 4B | [ollama.ai/download](https://ollama.ai/download) - **No API key required** |
-| Groq | GPT OSS 120B, Llama 3.1 8B | [console.groq.com/keys](https://console.groq.com/keys) |
-| OpenAI | GPT-5 Mini, GPT-5 | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
-| Anthropic | Claude Sonnet 4.5, Claude Haiku 4.5 | [console.anthropic.com](https://console.anthropic.com) |
+| **Groq** (default) | GPT OSS 120B, Llama 3.1 8B Instant | [console.groq.com/keys](https://console.groq.com/keys) |
+| **OpenAI** | GPT-5, GPT-5 Mini | [platform.openai.com/api-keys](https://platform.openai.com/api-keys) |
+| **Anthropic** | Claude Sonnet 4.5, Claude Haiku 4.5 | [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys) |
 
-### Local LLM Mode (Ollama)
-
-Run AI generation **100% offline and private** with no API keys required.
-
-#### Quick Start
-
-**macOS (Recommended):**
-1. Download and install from [ollama.com/download/mac](https://ollama.com/download/mac)
-2. Ollama starts automatically after installation
-3. Pull the model: `ollama pull gemma3:4b`
-
-**Linux:**
-```bash
-curl -fsSL https://ollama.ai/install.sh | sh
-ollama serve
-ollama pull gemma3:4b
-```
-
-**Windows:**
-1. Download installer from [ollama.ai/download](https://ollama.ai/download)
-2. Run installer and start Ollama from Start menu
-3. Pull the model: `ollama pull gemma3:4b`
-
-The app automatically detects Ollama and switches to local mode.
-
-**Model:** Gemma 3 4B (~2.5GB) - Balanced speed and quality, optimized for prompt generation.
-
-#### How It Works
-
-**Smart Defaults:**
-- No API keys configured → Auto-enables Local LLM
-- API key added → Uses cloud provider (can toggle back to local in Settings)
-- Your choice persists across sessions
-
-**Benefits:**
-- ✅ **100% Private** - No data sent to cloud
-- ✅ **Offline** - No internet required
-- ✅ **Free** - No API costs
-- ✅ **Fast** - Local inference
-
-**Note:** For highest quality lyrics/titles, consider using cloud providers (Groq/OpenAI/Anthropic).
+> **Note:** OpenAI-compatible custom base URLs are supported (e.g. 9router).
 
 ## Features
 
-- **Local LLM support**: 100% offline AI generation with Ollama (no API keys, fully private)
 - **Structured prompts** from plain English with `Genre:`, `BPM:`, `Mood:`, `Instruments:` fields
 - **Three generation modes**: Full Prompt, Quick Vibes, Creative Boost
-- **Max Mode**: Community-discovered format for higher quality output
+- **Max Mode**: Community-discovered format for higher quality, realistic output
 - **Story Mode**: Transform structured prompts into evocative narrative prose (requires LLM)
-- **Enhanced LLM Enrichment**: Era detection, tempo inference, intent classification, cultural context, vocal character, energy level, spatial hints, with keyword-based fallback when LLM unavailable
+- **LLM Enrichment**: Era detection, tempo inference, intent classification, cultural context, vocal character, energy level, spatial hints — with keyword-based fallback when LLM unavailable
 - **Dynamic instrument selection** from curated pools with exclusion rules
-- **Genre detection**: Keyword matching → spelling correction → LLM analysis
-- **Mood selector**: Choose from 20 mood categories (~200 unique moods) to guide emotional tone across all modes (Full Prompt, Quick Vibes, Creative Boost)
+- **Genre detection**: Keyword matching → spelling correction → LLM analysis across 60+ genres
+- **Mood selector**: Choose from 20 mood categories (~200 unique moods) to guide emotional tone
 - **Cultural instruments**: Region-specific instruments (Brazil, Japan, Celtic, India, Middle East, Africa)
-- **Quick remix buttons** for mood/genre/instruments/style/recording
-- **Lyrics Mode**: Optional AI-generated structured lyrics
+- **Quick remix buttons** for mood, genre, instruments, style tags, recording, and lyrics
+- **Lyrics Mode**: Optional AI-generated structured lyrics with refinement
 - **1000-character limit** validation + contradictory tag warnings
 
 ## Modes
 
 ### Full Prompt Mode (Default)
 
-Generate structured prompts with optional Advanced Mode for precise genre control.
+Generate structured prompts with optional advanced controls for precise genre selection.
 
 **Output format:**
+
 ```
 [Mood, Genre/Style, Key: key/mode]
 
@@ -125,7 +86,7 @@ Instruments: Rhodes, upright bass, brushed drums
 ```
 
 <details>
-<summary><strong>Advanced Mode</strong></summary>
+<summary><strong>Advanced Controls</strong></summary>
 
 Searchable dropdowns for precise selection:
 
@@ -138,16 +99,11 @@ Searchable dropdowns for precise selection:
 | Polyrhythm | Rhythmic patterns |
 | Time Signature | Standard and odd meters (7/8, 5/4, etc.) |
 
-**Mood Selector:**
-- Available in both Simple and Advanced modes
-- Override default mood selection with specific category (Energetic, Calm, Dark, etc.)
-- Works independently of genre and style selections
-
 </details>
 
 ### Quick Vibes
 
-Simplified 60-character prompts for ambient/background music.
+Simplified category-based prompts for ambient and background music.
 
 <details>
 <summary><strong>Category Presets</strong></summary>
@@ -164,7 +120,7 @@ Simplified 60-character prompts for ambient/background music.
 
 ### Creative Boost
 
-Experimental genre exploration with creativity slider (0-100%).
+Experimental genre exploration with creativity slider (0%, 25%, 50%, 75%, 100%).
 
 | Level | Behavior |
 |-------|----------|
@@ -174,38 +130,11 @@ Experimental genre exploration with creativity slider (0-100%).
 | 75% Adventurous | Unusual combinations |
 | 100% High | Experimental fusions |
 
-### Genre-Aware Moods
-
-Creative Boost automatically selects moods that match your genre's character. 
-The creativity slider controls mood intensity within the genre's palette:
-
-- Low creativity → mild mood variants (e.g., "hazy" instead of "dreamy")
-- Normal creativity → moderate mood variants (e.g., "dreamy")
-- High creativity → intense mood variants (e.g., "surreal" instead of "dreamy")
-
-For example, ambient at high creativity produces "surreal" or "otherworldly" rather 
-than generic high-creativity moods like "chaotic" or "feral".
-
 <details>
-<summary><strong>Simple vs Advanced Mode</strong></summary>
+<summary><strong>Direct Mode (Suno V5 Styles)</strong></summary>
 
-| Feature | Simple | Advanced |
-|---------|--------|----------|
-| Creativity Slider | ✅ | ✅ |
-| Mood Selector | ✅ | ✅ |
-| Description Input | ✅ | ✅ |
-| Toggles (Lyrics, Wordless, Max) | ✅ | ✅ |
-| Seed Genres (up to 4) | ❌ | ✅ |
-| Suno V5 Styles (~900+) | ❌ | ✅ |
+When "Direct Mode" is enabled, you can select from ~900+ Suno V5 styles directly instead of the app's curated genre registry. This is mutually exclusive with seed genres:
 
-**Seed Genres vs Suno V5 Styles** (mutually exclusive):
-
-| Selector | Source | Format |
-|----------|--------|--------|
-| Seed Genres | App registry (<!-- SINGLE_GENRE_COUNT -->60<!-- /SINGLE_GENRE_COUNT --> + <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> combos) | Title Case |
-| Suno V5 Styles | Official Suno V5 (~900+) | lowercase as-is |
-
-**Note:** When Suno V5 Styles are selected ("Direct Mode"), Seed Genres are disabled (mutual exclusion). However, all other features remain fully functional:
 - ✅ Mood Selector works with any style combination
 - ✅ Max Mode toggle available
 - ✅ Can switch between Simple/Advanced modes freely
@@ -248,43 +177,23 @@ recording: "one person, one guitar, vintage microphone"
 
 ### Story Mode
 
-Transforms structured musical data into evocative narrative prose. Requires LLM (Ollama or cloud provider).
+Transforms structured musical data into evocative narrative prose. Requires an API key from any supported provider.
 
 | Feature | Behavior |
 |---------|----------|
 | Output | Evocative prose (100-500 chars) |
-| Requires | LLM (Ollama or cloud provider) |
+| Requires | API key (Groq, OpenAI, or Anthropic) |
 | Works with | MAX Mode (adds quality headers) |
 | Fallback | Deterministic structured output |
 
 **Example output:**
+
 ```
-The song opens in the intimate glow of a dimly-lit jazz club, where a Rhodes piano 
-plays warm, melancholic chords in D minor. A tenor sax drifts in with a smooth, 
-late-night melody between 80 and 110 BPM while an upright bass walks through 
-sophisticated changes. The brushed drums whisper beneath, creating an atmosphere 
+The song opens in the intimate glow of a dimly-lit jazz club, where a Rhodes piano
+plays warm, melancholic chords in D minor. A tenor sax drifts in with a smooth,
+late-night melody between 80 and 110 BPM while an upright bass walks through
+sophisticated changes. The brushed drums whisper beneath, creating an atmosphere
 of wistful longing.
-```
-
-<details>
-<summary><strong>Story Mode Details</strong></summary>
-
-**How it works:**
-1. Deterministic builder creates structured prompt (genre, BPM, instruments, mood)
-2. LLM transforms structure into narrative prose
-3. Musical accuracy maintained (genre keywords, tempo, instruments embedded naturally)
-4. Falls back to structured output if LLM unavailable or times out (8s)
-
-**Best for:** Ambient, jazz, cinematic, emotional genres where atmosphere matters more than structure.
-
-**Combining with MAX Mode:** When both enabled, MAX Mode headers are prepended to the narrative:
-```
-[Is_MAX_MODE: MAX](MAX)
-[QUALITY: MAX](MAX)
-[REALISM: MAX](MAX)
-[REAL_INSTRUMENTS: MAX](MAX)
-
-Neon-drenched synthwave pulses through the night at 120 BPM...
 ```
 
 </details>
@@ -332,7 +241,7 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 | Lo-fi | lofi, lo-fi, study beats, chillhop, lofi hip hop, lofi beats | felt piano, Rhodes, electric piano, vibraphone, kalimba, guitar, cello, clarinet, jazz brushes, shaker, percussion, drums, synth pad, ambient pad |
 | Synthwave | synthwave, retrowave, 80s, outrun, vaporwave, darksynth, cyberpunk | analog synth, analog synth pads, FM synth, digital synth, Moog synth, arpeggiator, synth pad, synth, supersaw, synth bass, 808, kick drum, hi-hat, drums, Linn drum |
 | Cinematic | cinematic, epic, trailer, film score, soundtrack, orchestral, dramatic, hybrid orchestral | strings, grand piano, string ostinato, pizzicato strings, french horn, low brass, tuba, trombone, cello, choir, wordless choir, solo soprano, violin, celesta, glockenspiel, bells, harp, english horn, piccolo, alto flute, bass flute, tubular bells, xylophone, string tremolo, euphonium, taiko drums, percussion, toms, timpani, orchestral bass drum, tam tam, suspended cymbal, braams, impacts, FX risers, sub-bass, ondes Martenot, col legno, sul ponticello, crotales |
-| Folk | folk, acoustic, singer-songwriter, celtic, traditional | acoustic guitar, felt piano, autoharp, mountain dulcimer, violin, harp, flute, harmonica, accordion, clarinet, concertina, cajón, percussion, frame drum, washboard, mandolin, banjo, hurdy gurdy, jaw harp, nyckelharpa |
+| Folk | folk, acoustic, singer-songwriter, celtic, traditional | acoustic guitar, felt piano, autoharp, mountain dulcimer, violin, harp, flute, harmonica, accordion, clarinet, concertina, cajon, percussion, frame drum, washboard, mandolin, banjo, hurdy gurdy, jaw harp, nyckelharpa |
 | R&B | rnb, r&b, neo-soul, contemporary r&b, quiet storm | Rhodes, Wurlitzer, electric piano, grand piano, Clavinet, bass, drums, 808, trap hi hats, slap bass, saxophone, strings, guitar, wah guitar, handclaps, shaker |
 | Video Game | video game, game music, gaming, chiptune, 8-bit, 8 bit, retro game, pixel, arcade, boss battle, level music, rpg, jrpg, adventure game, platformer, nintendo, sega | strings, felt piano, harp, synth pad, arpeggiator, FM synth, analog synth, synth strings, bells, glockenspiel, celesta, choir, french horn, trumpet, drums, percussion, taiko drums, timpani, 808, guitar, vocoder |
 | Country | country, country rock, country pop, americana, bluegrass, country gospel, honky tonk, outlaw country, nashville | acoustic guitar, Telecaster, grand piano, dobro, lap steel guitar, pedal steel, fiddle, harmonica, mandolin, banjo, autoharp, bass, drums, upright bass, Hammond organ, accordion, washboard, mountain dulcimer |
@@ -454,8 +363,6 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 <details>
 <summary><strong>Mood Categories (20 categories, ~200 unique moods)</strong></summary>
 
-Optional mood category selector available in Full Mode, Quick Vibes, and Creative Boost. Select a category to guide mood selection, or leave as "None (Auto)" for genre-based defaults.
-
 | Category | Example Moods |
 |----------|---------------|
 | Energetic | euphoric, explosive, triumphant, uplifting, vibrant |
@@ -537,30 +444,32 @@ Optional mood category selector available in Full Mode, Quick Vibes, and Creativ
 
 | Module | Purpose |
 |--------|---------|
-| `src/bun/ai/` | AI engine, providers (Ollama, Groq, OpenAI, Anthropic), generation, thematic context |
-| `src/bun/prompt/` | Prompt builders, postprocessing, deterministic operations |
-| `src/bun/instruments/` | Instrument registry, genre pools, cultural instruments |
+| `src/bun/ai/` | AI engine, cloud providers (Groq, OpenAI, Anthropic), generation, thematic context, story generator, creative boost, quick vibes |
+| `src/bun/prompt/` | Prompt builders, postprocessing, deterministic operations, section/remix/title/enrichment builders |
+| `src/bun/instruments/` | Instrument registry, 60+ genre pools, cultural instruments, harmonic modes, polyrhythms, time signatures |
 | `src/bun/keywords/` | Unified keyword matching with caching for fallback extraction |
 | `src/bun/handlers/` | RPC request handlers |
-| `src/bun/mood/` | Mood categories, intensity mapping, genre-mood associations |
+| `src/bun/mood/` | 20 mood categories, intensity mapping, genre-mood associations |
 | `src/bun/trace/` | Debug trace collection and decision logging |
-| `src/main-ui/` | React frontend |
-| `src/shared/` | Types, schemas, constants |
+| `src/main-ui/` | React 19 frontend with shadcn/ui components |
+| `src/shared/` | Types, Zod schemas, constants, utilities |
+| `src/web/` | Web server mode with Bun.serve + Vite |
 
 <details>
-<summary><strong>Generation & Remix Dataflow</strong></summary>
+<summary><strong>Generation Dataflow</strong></summary>
 
-**Prompt generation is ALWAYS deterministic** using curated data pools.
-LLM enriches output with thematic context and titles when available, with graceful fallback to keyword-based extraction.
+**Prompt generation is always deterministic** using curated data pools. LLM enriches output with thematic context and titles when available, with graceful fallback to keyword-based extraction.
 
 **Architecture:**
-- **Prompt**: Always deterministic - uses genre/instrument/mood pools
+
+- **Prompt**: Always deterministic — uses genre/instrument/mood pools
 - **Thematic Context**: LLM extraction when available, keyword fallback when unavailable
 - **Title**: LLM when available, deterministic fallback
 - **Lyrics**: LLM only (when Lyrics Mode enabled)
 
 **Thematic Context Enrichment (LLM or Keyword Fallback):**
-- Era detection (50s-60s, 70s, 80s, 90s, 2000s, modern) → production tags
+
+- Era detection (50s-60s, 70s, 80s, 90s, 2000s, modern)
 - Tempo inference (-30 to +30 BPM adjustment) based on scene energy
 - Intent classification (background, focal, cinematic, dancefloor, emotional)
 - Cultural/regional context (Brazil, Japan, Celtic, India, Middle East, Africa)
@@ -569,9 +478,6 @@ LLM enriches output with thematic context and titles when available, with gracef
 - Spatial hints (intimate to outdoor) → reverb selection
 - Keyword-based fallback with cached regex matching when LLM unavailable (4s timeout)
 - Description-aware mood extraction (priority moods from user's description)
-- Direct theme injection from description keywords when LLM unavailable
-
-**LLM Provider:** Ollama (local) or Cloud (Groq/OpenAI/Anthropic) based on user settings.
 
 ```mermaid
 flowchart TB
@@ -580,31 +486,30 @@ flowchart TB
     end
 
     subgraph "Always Deterministic"
-        PROMPT[Prompt<br/>Builder]
-        DATA[(Genre, Instrument,<br/>Mood, Keyword Pools)]
+        PROMPT[Prompt Builder]
+        DATA[(Genre, Instrument, Mood, Keyword Pools)]
     end
 
     subgraph "LLM Enrichment (Optional)"
-        CONTEXT[Thematic Context<br/>era/tempo/intent/cultural]
+        CONTEXT[Thematic Context]
         TITLE[Title Gen]
     end
 
     subgraph "Keyword Fallback"
-        KWFALLBACK[Keyword Extraction<br/>era/tempo/intent]
+        KWFALLBACK[Keyword Extraction]
     end
 
     subgraph Decision
-        LYR{Lyrics<br/>Mode?}
+        LYR{Lyrics Mode?}
     end
 
     subgraph "LLM (Lyrics Mode Only)"
         LYRICS[Lyrics Gen/Refine]
-        GENRE[Genre from<br/>Topic]
+        GENRE[Genre from Topic]
     end
 
     subgraph Provider
-        PROV{LLM<br/>Available?}
-        OLLAMA[Ollama Local]
+        PROV{LLM Available?}
         CLOUD[Cloud API]
     end
 
@@ -625,46 +530,22 @@ flowchart TB
     LYR -->|OFF| RESULT
     LYR -->|ON| LYRICS
     LYR -->|ON| GENRE
-    PROV -->|Local| OLLAMA
     PROV -->|Cloud| CLOUD
     LYRICS --> RESULT
     GENRE --> RESULT
-    OLLAMA --> RESULT
     CLOUD --> RESULT
-
-    classDef det fill:#28a745,stroke:#1e7e34,color:#fff
-    classDef ai fill:#fd7e14,stroke:#dc6a12,color:#fff
-    classDef data fill:#6c757d,stroke:#545b62,color:#fff
-    classDef provider fill:#007bff,stroke:#0069d9,color:#fff
-    classDef output fill:#17a2b8,stroke:#138496,color:#fff
-    classDef decision fill:#6f42c1,stroke:#5a32a3,color:#fff
-    classDef fallback fill:#ffc107,stroke:#d39e00,color:#000
-
-    class PROMPT det
-    class CONTEXT,TITLE,LYRICS,GENRE ai
-    class DATA data
-    class OLLAMA,CLOUD provider
-    class PROV,LYR decision
-    class RESULT output
-    class KWFALLBACK fallback
 ```
 
-| Operation | LLM Calls | Latency (Cloud) | Latency (Local) | Notes |
-|-----------|-----------|-----------------|-----------------|-------|
-| Generate (Lyrics OFF) | 0-2 | <50ms - ~550ms | <50ms - ~600ms | Deterministic prompt, +LLM for context/title when available |
-| Generate (Lyrics ON) | 2-4 | ~2s | ~1-3s* | Deterministic prompt, LLM for context/genre/title/lyrics |
-| Refine (Lyrics OFF) | 0 | <50ms | <50ms | Deterministic style remix |
-| Refine (Lyrics ON) | 1 | ~1s | ~1-2s* | Style: deterministic, Lyrics: LLM |
-| Quick Vibes | 0 | <50ms | <50ms | Category templates |
-| Creative Boost | 0-4 | <50ms-2s | <50ms-3s* | Depends on lyrics toggle and LLM availability |
-| Remix (6 buttons) | 0 | <10ms | <10ms | All deterministic |
-| Remix Lyrics | 1 | ~1s | ~1-2s* | LLM-based |
-
-*Local latency varies by hardware (CPU vs GPU, model size)
-
-**Why hybrid?** Deterministic prompt ensures instant, predictable core output. LLM enrichment adds thematic depth when available without blocking.
-
-📖 **[Prompt Generation Guide](docs/prompt-generation-guide.md)** - Complete guide to output formats (Standard, MAX, Quick Vibes, Direct), how prompts are generated, and customization options.
+| Operation | LLM Calls | Latency (Cloud) | Notes |
+|-----------|-----------|-----------------|-------|
+| Generate (Lyrics OFF) | 0-2 | <50ms - ~550ms | Deterministic prompt, +LLM for context/title |
+| Generate (Lyrics ON) | 2-4 | ~2s | Deterministic prompt, LLM for context/genre/title/lyrics |
+| Refine (Lyrics OFF) | 0 | <50ms | Deterministic style remix |
+| Refine (Lyrics ON) | 1 | ~1s | Style: deterministic, Lyrics: LLM |
+| Quick Vibes | 0 | <50ms | Category templates |
+| Creative Boost | 0-4 | <50ms-2s | Depends on lyrics toggle and LLM availability |
+| Remix (6 buttons) | 0 | <10ms | All deterministic |
+| Remix Lyrics | 1 | ~1s | LLM-based |
 
 </details>
 
@@ -672,12 +553,10 @@ flowchart TB
 
 - **Runtime:** [Electrobun](https://electrobun.dev/) (Bun-based desktop framework)
 - **UI:** React 19 + shadcn/ui + Tailwind CSS v4
-- **AI:** AI SDK v6 (Groq, OpenAI, Anthropic) + Ollama (local inference)
-- **Validation:** Zod
-- **Testing & Quality:** Bun test + coverage/audit policy gates via `bun run validate`
+- **AI:** AI SDK v6 (Groq, OpenAI, Anthropic) + Vercel AI SDK
+- **Validation:** Zod v4
+- **Testing:** Bun test + coverage thresholds + audit policy gates via `bun run validate`
 
 ## License
 
 MIT License. See [`LICENSE`](./LICENSE).
-
-Copyright (c) 2026 Douwe de Vries.
