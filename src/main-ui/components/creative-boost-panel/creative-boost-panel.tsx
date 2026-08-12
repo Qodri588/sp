@@ -1,0 +1,171 @@
+import { Dice3, Zap } from 'lucide-react';
+import { type ReactElement } from 'react';
+
+import { CreativitySlider } from '@/components/creativity-slider';
+import { PanelSubmitButton } from '@/components/shared';
+import { useRefinedFeedback } from '@/hooks/use-refined-feedback';
+import { CreativeBoostSubmitSchema } from '@shared/schemas/submit-validation';
+
+import { CreativeBoostModeToggle } from './creative-boost-mode-toggle';
+import { DescriptionInput } from './description-input';
+import { LyricsTopicInput } from './lyrics-topic-input';
+import { ModeSpecificInputs } from './mode-specific-inputs';
+import { TogglesSection } from './toggles-section';
+import { useCreativeBoostHandlers } from './use-creative-boost-handlers';
+
+import type { MoodCategory } from '@bun/mood';
+import type { CreativeBoostInput, CreativeBoostMode } from '@shared/types';
+
+interface CreativeBoostPanelProps {
+  input: CreativeBoostInput;
+  maxMode: boolean;
+  storyMode: boolean;
+  lyricsMode: boolean;
+  isLLMAvailable: boolean;
+  isGenerating: boolean;
+  hasCurrentPrompt: boolean;
+  creativeBoostMode: CreativeBoostMode;
+  onCreativeBoostModeChange: (mode: CreativeBoostMode) => void;
+  onInputChange: (
+    input: CreativeBoostInput | ((prev: CreativeBoostInput) => CreativeBoostInput)
+  ) => void;
+  onMaxModeChange: (mode: boolean) => void;
+  onStoryModeChange: (mode: boolean) => void;
+  onLyricsModeChange: (mode: boolean) => void;
+  onGenerate: () => void;
+  onRefine: (feedback: string) => Promise<boolean>;
+}
+
+// eslint-disable-next-line max-lines-per-function
+export function CreativeBoostPanel({
+  input,
+  maxMode,
+  storyMode,
+  lyricsMode,
+  isLLMAvailable,
+  isGenerating,
+  hasCurrentPrompt,
+  creativeBoostMode,
+  onCreativeBoostModeChange,
+  onInputChange,
+  onMaxModeChange,
+  onStoryModeChange,
+  onLyricsModeChange,
+  onGenerate,
+  onRefine,
+}: CreativeBoostPanelProps): ReactElement {
+  const isRefineMode = hasCurrentPrompt;
+  const isDirectMode = input.sunoStyles.length > 0;
+  const isSimpleMode = creativeBoostMode === 'simple';
+
+  const { refined, handleRefine } = useRefinedFeedback(onRefine);
+
+  // Use centralized validation for submit eligibility
+  const canSubmit = CreativeBoostSubmitSchema.safeParse({
+    description: input.description,
+    lyricsTopic: input.lyricsTopic,
+    lyricsMode,
+    sunoStyles: input.sunoStyles,
+    seedGenres: input.seedGenres,
+  }).success;
+
+  const {
+    handleCreativityChange,
+    handleGenresChange,
+    handleSunoStylesChange,
+    handleDescriptionChange,
+    handleLyricsTopicChange,
+    handleLyricsToggleChange,
+    handleKeyDown,
+    handleSubmit,
+  } = useCreativeBoostHandlers({
+    input,
+    isGenerating,
+    isRefineMode,
+    onInputChange,
+    onLyricsModeChange,
+    onGenerate,
+    onRefine: handleRefine,
+  });
+
+  const handleMoodCategoryChange = (category: MoodCategory | null): void => {
+    onInputChange((prev) => ({ ...prev, moodCategory: category }));
+  };
+
+  return (
+    <div className="space-y-[var(--space-5)]">
+      <CreativeBoostModeToggle
+        mode={creativeBoostMode}
+        isDirectMode={isDirectMode}
+        onModeChange={onCreativeBoostModeChange}
+      />
+
+      <CreativitySlider
+        value={input.creativityLevel}
+        onChange={handleCreativityChange}
+        disabled={isDirectMode}
+      />
+      {isDirectMode && (
+        <p className="ui-helper -mt-3">Creativity slider disabled when using Suno V5 Styles</p>
+      )}
+
+      <ModeSpecificInputs
+        input={input}
+        isSimpleMode={isSimpleMode}
+        isDirectMode={isDirectMode}
+        storyMode={storyMode}
+        onMoodCategoryChange={handleMoodCategoryChange}
+        onGenresChange={handleGenresChange}
+        onSunoStylesChange={handleSunoStylesChange}
+      />
+
+      <DescriptionInput
+        value={input.description}
+        isRefineMode={isRefineMode}
+        isDirectMode={isDirectMode}
+        storyMode={storyMode}
+        onChange={handleDescriptionChange}
+        onKeyDown={handleKeyDown}
+      />
+
+      {isSimpleMode && (
+        <p className="ui-helper">
+          AI will automatically select genres and vocal style based on your description
+        </p>
+      )}
+
+      {lyricsMode && (
+        <LyricsTopicInput
+          value={input.lyricsTopic}
+          onChange={handleLyricsTopicChange}
+          onKeyDown={handleKeyDown}
+        />
+      )}
+
+      <TogglesSection
+        maxMode={maxMode}
+        storyMode={storyMode}
+        lyricsMode={lyricsMode}
+        isLLMAvailable={isLLMAvailable}
+        isDirectMode={isDirectMode}
+        onMaxModeChange={onMaxModeChange}
+        onStoryModeChange={onStoryModeChange}
+        onLyricsModeChange={handleLyricsToggleChange}
+      />
+
+      <PanelSubmitButton
+        isGenerating={isGenerating}
+        isRefineMode={isRefineMode}
+        isDirectMode={isDirectMode}
+        canSubmit={canSubmit}
+        refined={refined}
+        onSubmit={handleSubmit}
+        defaultIcon={<Dice3 className="w-4 h-4" />}
+        defaultLabel="GENERATE CREATIVE BOOST"
+        directModeIcon={<Zap className="w-4 h-4" />}
+        directModeLabel="USE SELECTED STYLES"
+        refineDirectModeLabel="REFINE TITLE & LYRICS"
+      />
+    </div>
+  );
+}

@@ -1,0 +1,84 @@
+import { runAIRequest } from '@bun/ai/request-runner';
+import { createLogger } from '@shared/logger';
+import { APP_CONSTANTS } from '@shared/constants';
+import { getErrorMessage } from '@shared/errors';
+
+import type { LanguageModel } from 'ai';
+
+const log = createLogger('LLMRewriter');
+
+const MAX_CHARS = APP_CONSTANTS.MAX_PROMPT_CHARS;
+
+export async function condenseWithDedup(
+  text: string,
+  repeatedWords: string[],
+  getModel: () => LanguageModel
+): Promise<string> {
+  try {
+    const condensed = await runAIRequest({
+      getModel,
+      systemPrompt: [
+        'Rewrite the given music prompt to remove word repetition while preserving meaning and musical quality.',
+        'Return ONLY the rewritten prompt text.',
+        'Do NOT include explanations, meta-instructions, prefaces, or quotes.',
+        'Do NOT mention repetition-removal, condensing, or "output only" in the result.',
+      ].join(' '),
+      userPrompt: `PROMPT_TO_REWRITE:\n<<<\n${text}\n>>>\n\nREPEATED_WORDS:\n${repeatedWords.join(', ')}`,
+      errorContext: 'condense with dedup',
+      maxRetries: 2,
+    });
+    return condensed.trim();
+  } catch (error: unknown) {
+    log.warn('condenseWithDedup:failed', { error: getErrorMessage(error) });
+    return text;
+  }
+}
+
+export async function condense(
+  text: string,
+  getModel: () => LanguageModel
+): Promise<string> {
+  const targetChars = MAX_CHARS - 50;
+
+  try {
+    const condensed = await runAIRequest({
+      getModel,
+      systemPrompt: [
+        `Rewrite the given music prompt to be under ${targetChars} characters while preserving musical quality and key details.`,
+        'Return ONLY the rewritten prompt text.',
+        'Do NOT include explanations, meta-instructions, prefaces, or quotes.',
+        'Do NOT mention condensing, character counts, or "output only" in the result.',
+      ].join(' '),
+      userPrompt: `PROMPT_TO_REWRITE:\n<<<\n${text}\n>>>`,
+      errorContext: 'condense prompt',
+      maxRetries: 2,
+    });
+    return condensed.trim();
+  } catch (error: unknown) {
+    log.warn('condense:failed', { error: getErrorMessage(error) });
+    return text;
+  }
+}
+
+export async function rewriteWithoutMeta(
+  text: string,
+  getModel: () => LanguageModel
+): Promise<string> {
+  try {
+    const rewritten = await runAIRequest({
+      getModel,
+      systemPrompt: [
+        'Rewrite the given music prompt text.',
+        'Remove any meta-instructions or assistant chatter.',
+        'Return ONLY the final prompt text.',
+      ].join(' '),
+      userPrompt: `PROMPT_TO_REWRITE:\n<<<\n${text}\n>>>`,
+      errorContext: 'rewrite without meta',
+      maxRetries: 1,
+    });
+    return rewritten.trim();
+  } catch (error: unknown) {
+    log.warn('rewriteWithoutMeta:failed', { error: getErrorMessage(error) });
+    return text;
+  }
+}

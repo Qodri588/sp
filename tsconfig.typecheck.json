@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/main-ui/*"],
+      "@shared/types": ["./src/shared/types/index.ts"],
+      "@shared/types/*": ["./src/shared/types/*"],
+      "@shared/*": ["./src/shared/*"],
+      "@bun/*": ["./src/bun/*"]
+    }
+  }
+}

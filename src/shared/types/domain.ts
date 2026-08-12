@@ -1,0 +1,126 @@
+// Domain types - core business entities
+
+import type { MoodCategory } from '@bun/mood';
+import type { QuickVibesCategory as QuickVibesCategoryType } from '@shared/schemas/common';
+import type { TraceRun } from '@shared/types/trace';
+// Import QuickVibesCategory from schema - single source of truth
+
+// Prompt generation mode
+export type PromptMode = 'full' | 'quickVibes' | 'creativeBoost';
+
+// Creativity level for Creative Boost slider
+export type CreativityLevel = 'low' | 'safe' | 'normal' | 'adventurous' | 'high';
+
+// Valid slider positions for creativity (5 discrete values)
+export type CreativitySliderValue = 0 | 25 | 50 | 75 | 100;
+
+/**
+ * Quick Vibes category presets - 16 total categories.
+ * Derived from QuickVibesCategorySchema to ensure type and schema stay in sync.
+ * This is the non-nullable type, suitable for indexing into objects.
+ */
+export type QuickVibesCategory = QuickVibesCategoryType;
+
+// Quick Vibes input state
+export interface QuickVibesInput {
+  category: QuickVibesCategory | null;
+  customDescription: string;
+  /** 0-4 Suno V5 style keys (mutually exclusive with category) */
+  sunoStyles: string[];
+  /** Optional mood category to influence prompt generation */
+  moodCategory: MoodCategory | null;
+}
+
+// Creative Boost input state
+// Note: maxMode and lyricsMode are handled by global SettingsContext (same as Quick Vibes)
+export interface CreativeBoostInput {
+  creativityLevel: CreativitySliderValue; // 5 discrete positions: 0, 25, 50, 75, 100
+  seedGenres: string[]; // 0-4 genre keys (from registry or combinations)
+  /** 0-4 Suno V5 style keys (mutually exclusive with seedGenres) */
+  sunoStyles: string[];
+  description: string; // Optional text description
+  lyricsTopic: string; // Topic for lyrics (when lyrics enabled)
+  /** Optional mood category to influence prompt generation */
+  moodCategory: MoodCategory | null;
+}
+
+export const EMPTY_CREATIVE_BOOST_INPUT = {
+  creativityLevel: 50,
+  seedGenres: [],
+  sunoStyles: [],
+  description: '',
+  lyricsTopic: '',
+  moodCategory: null,
+} as const satisfies CreativeBoostInput;
+
+// Editor mode types
+export type EditorMode = 'simple' | 'advanced';
+
+// Creative Boost panel mode (Simple shows fewer options)
+export type CreativeBoostMode = 'simple' | 'advanced';
+
+export interface AdvancedSelection {
+  harmonicStyle: string | null;
+  harmonicCombination: string | null;
+  polyrhythmCombination: string | null;
+  timeSignature: string | null;
+  timeSignatureJourney: string | null;
+  seedGenres: string[]; // 0-4 genres or genre combinations
+  /** 0-4 Suno V5 style keys (mutually exclusive with seedGenres) */
+  sunoStyles: string[];
+}
+
+export const EMPTY_ADVANCED_SELECTION = {
+  harmonicStyle: null,
+  harmonicCombination: null,
+  polyrhythmCombination: null,
+  timeSignature: null,
+  timeSignatureJourney: null,
+  seedGenres: [],
+  sunoStyles: [],
+} as const satisfies AdvancedSelection;
+
+export interface PromptVersion {
+  id: string;
+  content: string;
+  title?: string;
+  lyrics?: string;
+  feedback?: string;
+  lockedPhrase?: string;
+  timestamp: string;
+  debugTrace?: TraceRun;
+}
+
+export interface PromptSession {
+  id: string;
+  originalInput: string;
+  lyricsTopic?: string;
+  currentPrompt: string;
+  currentTitle?: string;
+  currentLyrics?: string;
+  versionHistory: PromptVersion[];
+  createdAt: string;
+  updatedAt: string;
+  // Mode-specific fields
+  promptMode?: PromptMode;
+  quickVibesInput?: QuickVibesInput;
+  creativeBoostInput?: CreativeBoostInput;
+}
+
+/** Options for prompt format conversion with performance guidance */
+export interface ConversionOptions {
+  /** Seed genres for style guidance */
+  readonly seedGenres?: string[];
+  /** Suno-specific style tags */
+  readonly sunoStyles?: string[];
+  /** Instruments from performance guidance to use instead of genre fallback */
+  readonly performanceInstruments?: string[];
+  /** Vocal style from performance guidance to deterministically inject */
+  readonly performanceVocalStyle?: string;
+  /** Chord progression to include in instruments (short format: "Name (pattern)") */
+  readonly chordProgression?: string;
+  /** Pre-computed BPM range string (e.g., "between 80 and 160") - takes priority over genre inference */
+  readonly bpmRange?: string;
+  /** Ollama endpoint for local LLM mode */
+  readonly ollamaEndpoint?: string;
+}

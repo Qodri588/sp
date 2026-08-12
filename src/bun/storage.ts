@@ -1,0 +1,293 @@
+import { mkdir } from 'fs/promises';
+import { homedir } from 'os';
+import { basename, join } from 'path';
+
+import { decrypt, encrypt } from '@bun/crypto';
+import { createLogger } from '@shared/logger';
+import { APP_CONSTANTS } from '@shared/constants';
+import { getErrorMessage, StorageError } from '@shared/errors';
+import { TraceRunSchema } from '@shared/schemas';
+import { removeSessionById, sortByUpdated, upsertSessionList } from '@shared/session-utils';
+import {
+  type PromptSession,
+  type PromptVersion,
+  type AppConfig,
+  type APIKeys,
+  DEFAULT_API_KEYS,
+  type AIProvider,
+  type PromptMode,
+  type CreativeBoostMode,
+} from '@shared/types';
+
+// Type for the stored config (with encrypted API keys)
+type StoredConfig = Partial<{
+  provider: AIProvider;
+  apiKeys: Partial<Record<AIProvider, string | null>>;
+  model: string;
+  openaiBaseUrl: string | null;
+  useSunoTags: boolean;
+  debugMode: boolean;
+  maxMode: boolean;
+  lyricsMode: boolean;
+  storyMode: boolean;
+  promptMode: PromptMode;
+  creativeBoostMode: CreativeBoostMode;
+}>;
+
+const log = createLogger('Storage');
+
+const DEFAULT_CONFIG: AppConfig = {
+  provider: APP_CONSTANTS.AI.DEFAULT_PROVIDER,
+  apiKeys: { ...DEFAULT_API_KEYS },
+  model: APP_CONSTANTS.AI.DEFAULT_MODEL,
+  useSunoTags: APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS,
+  debugMode: APP_CONSTANTS.AI.DEFAULT_DEBUG_MODE,
+  maxMode: APP_CONSTANTS.AI.DEFAULT_MAX_MODE,
+  lyricsMode: APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE,
+  storyMode: APP_CONSTANTS.AI.DEFAULT_STORY_MODE,
+  promptMode: APP_CONSTANTS.AI.DEFAULT_PROMPT_MODE,
+  creativeBoostMode: 'simple',
+};
+
+export class StorageManager {
+  private baseDir: string;
+  private historyPath: string;
+  private configPath: string;
+  private configWriteQueue: Promise<void> = Promise.resolve();
+
+  constructor(baseDir = join(homedir(), APP_CONSTANTS.STORAGE_DIR)) {
+    this.baseDir = baseDir;
+    this.historyPath = join(this.baseDir, 'history.json');
+    this.configPath = join(this.baseDir, 'config.json');
+  }
+
+  private async readJsonFile(path: string, label: string): Promise<unknown> {
+    const file = Bun.file(path);
+    if (!(await file.exists())) {
+      return null;
+    }
+
+    const raw = await file.text();
+    try {
+      return JSON.parse(raw) as unknown;
+    } catch (error: unknown) {
+      const backupPath = join(
+        this.baseDir,
+        `${basename(path, '.json')}.corrupt-${Date.now().toString()}.json`
+      );
+
+      try {
+        await Bun.write(backupPath, raw);
+      } catch (backupError: unknown) {
+        log.warn('backupCorruptFile:failed', {
+          path,
+          backupPath,
+          error: getErrorMessage(backupError),
+        });
+      }
+
+      throw new StorageError(
+        `Failed to parse ${label}. A backup was written to ${backupPath}.`,
+        'read',
+        error instanceof Error ? error : undefined
+      );
+    }
+  }
+
+  private async readHistoryForWrite(): Promise<PromptSession[]> {
+    const raw = await this.readJsonFile(this.historyPath, 'history file');
+    if (raw === null) {
+      return [];
+    }
+    if (!Array.isArray(raw)) {
+      throw new StorageError('History file has invalid structure.', 'read');
+    }
+    return sanitizeDebugTracesInHistory(raw);
+  }
+
+  private async readConfigForWrite(): Promise<AppConfig> {
+    const raw = await this.readJsonFile(this.configPath, 'config file');
+    if (raw === null) {
+      return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
+    }
+    if (!isRecord(raw)) {
+      throw new StorageError('Config file has invalid structure.', 'read');
+    }
+
+    const config = raw as StoredConfig;
+    const apiKeys = await this.decryptApiKeys(config.apiKeys);
+    return this.buildConfigWithDefaults(config, apiKeys);
+  }
+
+  async initialize(): Promise<void> {
+    try {
+      await mkdir(this.baseDir, { recursive: true });
+    } catch (error: unknown) {
+      const message = getErrorMessage(error);
+      log.error('initialize:failed', { error: message });
+      throw new StorageError(`Failed to initialize storage directory: ${message}`, 'write');
+    }
+  }
+
+  async getHistory(): Promise<PromptSession[]> {
+    const sessions = await this.readHistoryForWrite();
+    return sortByUpdated(sessions);
+  }
+
+  async saveHistory(sessions: PromptSession[]): Promise<void> {
+    try {
+      await Bun.write(this.historyPath, JSON.stringify(sessions, null, 2));
+    } catch (error: unknown) {
+      const message = getErrorMessage(error);
+      log.error('saveHistory:failed', { error: message });
+      throw new StorageError(`Failed to save history: ${message}`, 'write');
+    }
+  }
+
+  async saveSession(session: PromptSession): Promise<void> {
+    const history = await this.readHistoryForWrite();
+    const updated = upsertSessionList(history, session);
+    await this.saveHistory(updated);
+  }
+
+  async deleteSession(id: string): Promise<void> {
+    const history = await this.readHistoryForWrite();
+    const filtered = removeSessionById(history, id);
+    await this.saveHistory(filtered);
+  }
+
+  /** Decrypt API keys from stored config */
+  private async decryptApiKeys(
+    storedKeys: Partial<Record<AIProvider, string | null>> | undefined
+  ): Promise<APIKeys> {
+    const apiKeys: APIKeys = { ...DEFAULT_API_KEYS };
+    if (!storedKeys) return apiKeys;
+
+    for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
+      const encryptedKey = storedKeys[provider];
+      if (encryptedKey) {
+        try {
+          apiKeys[provider] = await decrypt(encryptedKey);
+        } catch (e) {
+          log.error('getConfig:decryptFailed', { provider, error: getErrorMessage(e) });
+          apiKeys[provider] = null;
+        }
+      }
+    }
+    return apiKeys;
+  }
+
+  /** Build AppConfig with defaults for missing values */
+  private buildConfigWithDefaults(config: StoredConfig, apiKeys: APIKeys): AppConfig {
+    return {
+      provider: config.provider ?? DEFAULT_CONFIG.provider,
+      apiKeys,
+      model: config.model ?? DEFAULT_CONFIG.model,
+      openaiBaseUrl: config.openaiBaseUrl ?? null,
+      useSunoTags: config.useSunoTags ?? DEFAULT_CONFIG.useSunoTags,
+      debugMode: config.debugMode ?? DEFAULT_CONFIG.debugMode,
+      maxMode: config.maxMode ?? DEFAULT_CONFIG.maxMode,
+      lyricsMode: config.lyricsMode ?? DEFAULT_CONFIG.lyricsMode,
+      storyMode: config.storyMode ?? DEFAULT_CONFIG.storyMode,
+      promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
+      creativeBoostMode: config.creativeBoostMode ?? DEFAULT_CONFIG.creativeBoostMode,
+    };
+  }
+
+  private async persistConfig(config: AppConfig): Promise<void> {
+    // Encrypt all API keys
+    const encryptedKeys: APIKeys = { ...DEFAULT_API_KEYS };
+    for (const provider of APP_CONSTANTS.AI.PROVIDER_IDS) {
+      if (config.apiKeys[provider]) {
+        try {
+          encryptedKeys[provider] = await encrypt(config.apiKeys[provider]);
+        } catch (e) {
+          const message = getErrorMessage(e);
+          log.error('saveConfig:encryptFailed', { provider, error: message });
+          throw new StorageError(
+            `Failed to encrypt API key for ${provider}: ${message}`,
+            'encrypt'
+          );
+        }
+      }
+    }
+
+    const toSave = { ...config, apiKeys: encryptedKeys };
+    await Bun.write(this.configPath, JSON.stringify(toSave, null, 2));
+  }
+
+  async getConfig(): Promise<AppConfig> {
+    return this.readConfigForWrite();
+  }
+
+  async saveConfig(config: Partial<AppConfig>): Promise<void> {
+    const writeTask = this.configWriteQueue.then(async () => {
+      try {
+        const existing = await this.readConfigForWrite();
+        const toSave = { ...existing, ...config };
+        await this.persistConfig(toSave);
+      } catch (error: unknown) {
+        if (error instanceof StorageError) throw error;
+        const message = getErrorMessage(error);
+        log.error('saveConfig:failed', { error: message });
+        throw new StorageError(`Failed to save config: ${message}`, 'write');
+      }
+    });
+
+    this.configWriteQueue = writeTask.catch(() => undefined);
+    return writeTask;
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object';
+}
+
+function isPromptVersion(value: unknown): value is PromptVersion {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.content === 'string' &&
+    typeof value.timestamp === 'string'
+  );
+}
+
+function isPromptSession(value: unknown): value is PromptSession {
+  return (
+    isRecord(value) &&
+    typeof value.id === 'string' &&
+    typeof value.originalInput === 'string' &&
+    typeof value.currentPrompt === 'string' &&
+    typeof value.createdAt === 'string' &&
+    typeof value.updatedAt === 'string' &&
+    Array.isArray(value.versionHistory)
+  );
+}
+
+function sanitizeDebugTracesInHistory(raw: unknown): PromptSession[] {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+
+  return raw.filter(isPromptSession).map((session) => {
+    const sanitizedVersions = session.versionHistory.filter(isPromptVersion).map((version) => {
+      if (!('debugTrace' in version) || version.debugTrace === undefined) {
+        return version;
+      }
+
+      const parsed = TraceRunSchema.safeParse(version.debugTrace);
+      if (parsed.success) {
+        return { ...version, debugTrace: parsed.data };
+      }
+
+      // Drop invalid traces rather than crashing on load.
+      const { debugTrace: _drop, ...rest } = version;
+      return rest;
+    });
+
+    return {
+      ...session,
+      versionHistory: sanitizedVersions,
+    };
+  });
+}

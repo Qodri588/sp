@@ -1,0 +1,55 @@
+# dependencies (bun install)
+node_modules
+
+# output
+out
+dist
+build
+artifacts
+*.tgz
+
+# code coverage
+coverage
+*.lcov
+.tmp-coverage-*
+
+# logs
+logs
+_.log
+report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# caches
+.eslintcache
+.cache
+*.tsbuildinfo
+
+# generated CSS (regenerated on each build)
+src/main-ui/dist.css
+
+# IntelliJ based IDEs
+.idea
+
+# Finder (MacOS) folder config
+.DS_Store
+
+# Factory AI
+.factory
+
+# local agent/orchestration state
+.omx/
+.codex/
+.codegraph/
+.commandcode/
+.superpowers/
+
+# misc
+*.7z
+dist-web/
+context.yaml
