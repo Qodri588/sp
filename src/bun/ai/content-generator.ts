@@ -127,7 +127,7 @@ export async function generateLyrics(
   traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
 ): Promise<LyricsResult> {
   const systemPrompt = buildLyricsSystemPrompt(maxMode, useSunoTags);
-  const userPrompt = buildLyricsUserPrompt(description, genre, mood, useSunoTags);
+  const userPrompt = buildLyricsUserPrompt(description, genre, mood, useSunoTags, maxMode);
   const debugInfo = { systemPrompt, userPrompt };
 
   try {

@@ -9,7 +9,27 @@ export function cleanTitle(title: string | undefined, fallback = 'Untitled'): st
 }
 
 export function cleanLyrics(lyrics: string | undefined): string | undefined {
-  return lyrics?.trim() || undefined;
+  if (!lyrics) return undefined;
+
+  let text = lyrics.trim();
+
+  // Strip markdown code fences the model sometimes wraps lyrics in
+  text = text.replace(/^```[a-z]*\s*\n?/i, '').replace(/\n?```\s*$/, '').trim();
+
+  // Strip a stray leading title/chatter line the model adds before the first
+  // section tag (e.g. `"My Song Title"`, `Title: My Song Title`, "Here are...")
+  const lines = text.split('\n');
+  const firstTagIndex = lines.findIndex((line) => line.trim().startsWith('['));
+  if (firstTagIndex > 0) {
+    const prefix = lines.slice(0, firstTagIndex).join(' ').trim();
+    const looksLikeTitle = /^["'“”].{1,60}["'“”]$/.test(prefix);
+    const looksLikeChatter = /^(title|song title|here are|here is|lyrics)(\s*:|:|\s+)/i.test(prefix);
+    if (looksLikeTitle || looksLikeChatter) {
+      text = lines.slice(firstTagIndex).join('\n').trim();
+    }
+  }
+
+  return text || undefined;
 }
 
 export async function postProcess(

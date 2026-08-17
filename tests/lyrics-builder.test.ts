@@ -57,6 +57,17 @@ describe('lyrics-builder', () => {
       expect(prompt).not.toContain("Match the genre's typical lyrical style and vocabulary");
     });
 
+    it('includes language rules with banned cliché words and rhymes', () => {
+      const prompt = buildLyricsSystemPrompt(false);
+      expect(prompt).toContain('LANGUAGE RULES (STRICT)');
+      expect(prompt).toContain('3-6 words per line');
+      expect(prompt).toContain('vertical, stacked');
+      expect(prompt).toContain('shadows');
+      expect(prompt).toContain('constellation');
+      expect(prompt).toContain('fire/desire');
+      expect(prompt).toContain('soul/control');
+    });
+
     it('includes backing vocals guidance when useSunoTags is true', () => {
       const prompt = buildLyricsSystemPrompt(false, true);
       expect(prompt).toContain('BACKING VOCALS');
@@ -125,6 +136,36 @@ describe('lyrics-builder', () => {
       expect(prompt).toContain('Backing vocals');
       expect(prompt).toContain('(ooh)');
       expect(prompt).toContain('repeat key word');
+    });
+
+    it('mirrors mandatory structure rules into the user prompt for compliance', () => {
+      const prompt = buildLyricsUserPrompt('A song about the ocean', 'ambient', 'peaceful');
+      expect(prompt).toContain('CRITICAL RULES (MANDATORY');
+      expect(prompt).toContain('Output ONLY the lyrics - NO title, NO song name');
+      expect(prompt).toContain('[INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]');
+      expect(prompt).toContain('1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro');
+      expect(prompt).toContain('Section length is FREE - use as many lines as the story needs');
+    });
+
+    it('includes max mode first-line rule when maxMode is true', () => {
+      const prompt = buildLyricsUserPrompt('A song about the ocean', 'ambient', 'peaceful', false, true);
+      expect(prompt).toContain('///*****///');
+      expect(prompt).toContain('VERY FIRST LINE');
+    });
+
+    it('does not include max mode first-line rule when maxMode is false', () => {
+      const prompt = buildLyricsUserPrompt('A song about the ocean', 'ambient', 'peaceful');
+      expect(prompt).not.toContain('///*****///');
+    });
+
+    it('includes short-line and cliché-banned rules', () => {
+      const prompt = buildLyricsUserPrompt('A song about the ocean', 'ambient', 'peaceful');
+      expect(prompt).toContain('3-6 words per line');
+      expect(prompt).toContain('shadows');
+      expect(prompt).toContain('stardust');
+      expect(prompt).toContain('fire/desire');
+      expect(prompt).toContain('heart/apart');
+      expect(prompt).toContain('concrete physical details');
     });
   });
 

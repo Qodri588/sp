@@ -56,4 +56,25 @@ describe('cleanLyrics', () => {
   test('preserves internal whitespace', () => {
     expect(cleanLyrics('[VERSE]\n  Line 1\n  Line 2')).toBe('[VERSE]\n  Line 1\n  Line 2');
   });
+
+  test('strips leading quoted title before first section tag', () => {
+    expect(cleanLyrics('"My Song Title"\n\n[VERSE]\nHello')).toBe('[VERSE]\nHello');
+  });
+
+  test('strips leading "Title:" chatter before first section tag', () => {
+    expect(cleanLyrics('Title: My Song Title\n\n[VERSE]\nHello')).toBe('[VERSE]\nHello');
+  });
+
+  test('strips leading chatter like "Here are your lyrics"', () => {
+    expect(cleanLyrics('Here are your lyrics:\n[VERSE]\nHello')).toBe('[VERSE]\nHello');
+  });
+
+  test('strips markdown code fences', () => {
+    expect(cleanLyrics('```\n[VERSE]\nHello\n```')).toBe('[VERSE]\nHello');
+  });
+
+  test('keeps unquoted first line when it looks like a real lyric line', () => {
+    const lyrics = 'A gentle opening line\n[VERSE]\nHello';
+    expect(cleanLyrics(lyrics)).toBe(lyrics);
+  });
 });
