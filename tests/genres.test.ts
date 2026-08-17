@@ -16,8 +16,8 @@ import {
 } from '@bun/instruments';
 
 describe('Genre Registry', () => {
-  test('should have 60 genres registered', () => {
-    expect(Object.keys(GENRE_REGISTRY).length).toBe(60);
+  test('should have 66 genres registered', () => {
+    expect(Object.keys(GENRE_REGISTRY).length).toBe(66);
   });
 
   test('all genres have required properties', () => {

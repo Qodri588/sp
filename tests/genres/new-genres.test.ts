@@ -25,9 +25,9 @@ describe('v3.0 Genre Expansion', () => {
       expect(genreCount).toBeGreaterThanOrEqual(60);
     });
 
-    it('should have exactly 60 genres (35 existing + 25 new)', () => {
+    it('should have exactly 66 genres (35 existing + 25 new + 6 phonk)', () => {
       const genreCount = Object.keys(GENRE_REGISTRY).length;
-      expect(genreCount).toBe(60);
+      expect(genreCount).toBe(66);
     });
   });
 

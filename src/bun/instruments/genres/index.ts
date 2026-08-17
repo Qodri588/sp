@@ -40,6 +40,12 @@ import { METAL_GENRE } from '@bun/instruments/genres/metal';
 import { MIDDLEEASTERN_GENRE } from '@bun/instruments/genres/middleeastern';
 import { NEWAGE_GENRE } from '@bun/instruments/genres/newage';
 import { OUTRUN_GENRE } from '@bun/instruments/genres/outrun';
+import { PHONK_GENRE } from '@bun/instruments/genres/phonk';
+import { DRIFTPHONK_GENRE } from '@bun/instruments/genres/phonk';
+import { MEMPHISPHONK_GENRE } from '@bun/instruments/genres/phonk';
+import { BRAZILIANPHONK_GENRE } from '@bun/instruments/genres/phonk';
+import { PHONKHOUSE_GENRE } from '@bun/instruments/genres/phonk';
+import { WAVEPHONK_GENRE } from '@bun/instruments/genres/phonk';
 import { POP_GENRE } from '@bun/instruments/genres/pop';
 import { POSTPUNK_GENRE } from '@bun/instruments/genres/postpunk';
 import { PUNK_GENRE } from '@bun/instruments/genres/punk';
@@ -131,6 +137,14 @@ export const GENRE_REGISTRY = {
   bluegrass: BLUEGRASS_GENRE,
   ska: SKA_GENRE,
   dancehall: DANCEHALL_GENRE,
+
+  // Phonk family
+  phonk: PHONK_GENRE,
+  driftphonk: DRIFTPHONK_GENRE,
+  memphisphonk: MEMPHISPHONK_GENRE,
+  brazilianphonk: BRAZILIANPHONK_GENRE,
+  phonkhouse: PHONKHOUSE_GENRE,
+  wavephonk: WAVEPHONK_GENRE,
 } as const;
 
 export type GenreType = keyof typeof GENRE_REGISTRY;
@@ -202,6 +216,13 @@ export {
   BLUEGRASS_GENRE,
   SKA_GENRE,
   DANCEHALL_GENRE,
+  // Phonk family
+  PHONK_GENRE,
+  DRIFTPHONK_GENRE,
+  MEMPHISPHONK_GENRE,
+  BRAZILIANPHONK_GENRE,
+  PHONKHOUSE_GENRE,
+  WAVEPHONK_GENRE,
 };
 export type { GenreDefinition, InstrumentPool } from '@bun/instruments/genres/types';
 export {

@@ -217,4 +217,56 @@ export const GENRE_RECORDING_CONTEXTS: Record<string, readonly string[]> = {
     'independent punk recording',
     'lo-fi punk aesthetic',
   ],
+
+  phonk: [
+    'lo-fi tape bedroom studio',
+    'memphis underground recording',
+    'dusty tape machine vibe',
+    'looped cassette beats',
+    'phone speaker aesthetic',
+    'raw bedroom production',
+    'vintage sampler workflow',
+    'grimy basement setup',
+  ],
+
+  driftphonk: [
+    'car audio test rig',
+    'subwoofer showroom sound',
+    'drift event loudspeakers',
+    'clipped master session',
+    'distorted studio monitors',
+    'aggressive club rig',
+  ],
+
+  memphisphonk: [
+    '90s memphis cassette recording',
+    'vintage 4-track setup',
+    'lo-fi tape echo room',
+    'midnight basement session',
+    'dusty secondhand sampler',
+  ],
+
+  brazilianphonk: [
+    'favela sound system',
+    'baile funk street speakers',
+    'brazilian studio session',
+    'club subs cranked',
+    'mtg style production',
+  ],
+
+  phonkhouse: [
+    'club sound system',
+    'warehouse party rig',
+    'four-on-the-floor booth',
+    'peak hour club setup',
+    'phonk club session',
+  ],
+
+  wavephonk: [
+    'dreamy studio haze',
+    'soft-clipped vocal booth',
+    'late night headphone mix',
+    'hazy bedroom session',
+    'midnight studio glow',
+  ],
 } as const;

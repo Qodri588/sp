@@ -142,6 +142,12 @@ export const GENRE_TAG_WEIGHTS = {
   trap: { vocal: 0.7, spatial: 0.55, harmonic: 0.25, dynamic: 0.6, temporal: 0.45 },
   drill: { vocal: 0.7, spatial: 0.5, harmonic: 0.2, dynamic: 0.6, temporal: 0.45 },
   lofi: { vocal: 0.45, spatial: 0.55, harmonic: 0.4, dynamic: 0.3, temporal: 0.35 },
+  phonk: { vocal: 0.65, spatial: 0.45, harmonic: 0.25, dynamic: 0.6, temporal: 0.45 },
+  driftphonk: { vocal: 0.6, spatial: 0.5, harmonic: 0.2, dynamic: 0.7, temporal: 0.45 },
+  memphisphonk: { vocal: 0.6, spatial: 0.5, harmonic: 0.3, dynamic: 0.5, temporal: 0.4 },
+  brazilianphonk: { vocal: 0.6, spatial: 0.5, harmonic: 0.2, dynamic: 0.7, temporal: 0.5 },
+  phonkhouse: { vocal: 0.55, spatial: 0.6, harmonic: 0.25, dynamic: 0.6, temporal: 0.5 },
+  wavephonk: { vocal: 0.7, spatial: 0.6, harmonic: 0.3, dynamic: 0.45, temporal: 0.4 },
 
   // ============================================
   // Other

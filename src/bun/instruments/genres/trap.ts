@@ -10,7 +10,6 @@ export const TRAP_GENRE: GenreDefinition = {
     'cinematic trap',
     'trap soul',
     'melodic trap',
-    'phonk',
   ],
   description: 'Heavy bass-driven music with rolling hi-hats, 808s, and atmospheric dark textures',
   pools: {

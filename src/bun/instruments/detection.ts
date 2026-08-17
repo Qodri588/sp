@@ -100,6 +100,12 @@ export const GENRE_PRIORITY: GenreType[] = [
   'latin',
   'symphonic',
   'metal',
+  'brazilianphonk',
+  'memphisphonk',
+  'driftphonk',
+  'phonkhouse',
+  'wavephonk',
+  'phonk',
   'trap',
   'retro',
   'disco',
@@ -145,13 +151,13 @@ export const MOOD_TO_GENRE = {
   // Energetic moods
   energetic: ['electronic', 'house', 'rock', 'punk'],
   upbeat: ['pop', 'disco', 'funk', 'house'],
-  hype: ['trap', 'drill', 'hyperpop', 'hardstyle'],
+  hype: ['trap', 'drill', 'hyperpop', 'hardstyle', 'phonk', 'driftphonk'],
   party: ['house', 'disco', 'electronic', 'pop'],
   dance: ['house', 'electronic', 'disco', 'trance'],
   pumped: ['metal', 'rock', 'hardstyle', 'drumandbass'],
 
   // Dark/Moody moods
-  dark: ['darksynth', 'metal', 'ambient', 'postpunk'],
+  dark: ['darksynth', 'metal', 'ambient', 'postpunk', 'phonk'],
   moody: ['shoegaze', 'dreampop', 'postpunk', 'emo'],
   haunting: ['ambient', 'darksynth', 'classical', 'cinematic'],
   melancholy: ['emo', 'shoegaze', 'folk', 'blues'],
@@ -160,7 +166,7 @@ export const MOOD_TO_GENRE = {
 
   // Intense moods
   intense: ['metal', 'dubstep', 'hardstyle', 'drumandbass'],
-  aggressive: ['metal', 'punk', 'hardstyle', 'drill'],
+  aggressive: ['metal', 'punk', 'hardstyle', 'drill', 'driftphonk', 'brazilianphonk'],
   powerful: ['cinematic', 'symphonic', 'metal', 'rock'],
   epic: ['cinematic', 'symphonic', 'metal', 'classical'],
   dramatic: ['cinematic', 'classical', 'symphonic', 'darksynth'],

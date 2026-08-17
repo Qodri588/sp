@@ -33,6 +33,28 @@ export const GENRE_ALIASES = {
   'lofi hip hop': 'lofi',
   'lofi hiphop': 'lofi',
 
+  // Phonk variants
+  'drift phonk': 'driftphonk',
+  driftphonk: 'driftphonk',
+  'memphis phonk': 'memphisphonk',
+  'memphis rap': 'memphisphonk',
+  'old school phonk': 'memphisphonk',
+  'brazilian phonk': 'brazilianphonk',
+  'brazil phonk': 'brazilianphonk',
+  'brasil phonk': 'brazilianphonk',
+  'baile phonk': 'brazilianphonk',
+  'phonk house': 'phonkhouse',
+  'house phonk': 'phonkhouse',
+  'wave phonk': 'wavephonk',
+  'emotional phonk': 'wavephonk',
+  'sad phonk': 'wavephonk',
+  'melodic phonk': 'wavephonk',
+  'gym phonk': 'phonk',
+  'aggressive phonk': 'phonk',
+  'dark phonk': 'phonk',
+  'phonk rap': 'phonk',
+  phonk: 'phonk',
+
   // R&B variants
   'r&b': 'rnb',
   'r and b': 'rnb',

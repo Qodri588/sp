@@ -92,7 +92,7 @@ Searchable dropdowns for precise selection:
 
 | Option | Choices |
 |--------|---------|
-| Single Genre | <!-- SINGLE_GENRE_COUNT -->60<!-- /SINGLE_GENRE_COUNT --> genres |
+| Single Genre | <!-- SINGLE_GENRE_COUNT -->66<!-- /SINGLE_GENRE_COUNT --> genres |
 | Genre Combination | <!-- MULTI_GENRE_COUNT -->108<!-- /MULTI_GENRE_COUNT --> combos |
 | Harmonic Style | Modes (Dorian, Lydian, Phrygian, etc.) |
 | Modal Combination | Journeys (Major-Minor, Lydian-Minor, etc.) |
@@ -209,10 +209,11 @@ of wistful longing.
 
 ```
 videogame → synthwave → lofi → cinematic → jazz → classical → folk → rnb →
-country → soul → blues → punk → latin → symphonic → metal → trap →
-retro → disco → funk → reggae → afrobeat → house → trance → downtempo →
-dreampop → chillwave → newage → hyperpop → drill → melodictechno → indie → electronic →
-rock → pop → ambient
+country → soul → blues → punk → latin → symphonic → metal → brazilianphonk →
+memphisphonk → driftphonk → phonkhouse → wavephonk → phonk → trap → retro → disco →
+funk → reggae → afrobeat → house → trance → downtempo → dreampop → chillwave →
+newage → hyperpop → drill → melodictechno → indie → electronic → rock → pop →
+ambient
 ```
 
 <!-- GENRE_PRIORITY_END -->
@@ -241,7 +242,7 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 | Lo-fi | lofi, lo-fi, study beats, chillhop, lofi hip hop, lofi beats | felt piano, Rhodes, electric piano, vibraphone, kalimba, guitar, cello, clarinet, jazz brushes, shaker, percussion, drums, synth pad, ambient pad |
 | Synthwave | synthwave, retrowave, 80s, outrun, vaporwave, darksynth, cyberpunk | analog synth, analog synth pads, FM synth, digital synth, Moog synth, arpeggiator, synth pad, synth, supersaw, synth bass, 808, kick drum, hi-hat, drums, Linn drum |
 | Cinematic | cinematic, epic, trailer, film score, soundtrack, orchestral, dramatic, hybrid orchestral | strings, grand piano, string ostinato, pizzicato strings, french horn, low brass, tuba, trombone, cello, choir, wordless choir, solo soprano, violin, celesta, glockenspiel, bells, harp, english horn, piccolo, alto flute, bass flute, tubular bells, xylophone, string tremolo, euphonium, taiko drums, percussion, toms, timpani, orchestral bass drum, tam tam, suspended cymbal, braams, impacts, FX risers, sub-bass, ondes Martenot, col legno, sul ponticello, crotales |
-| Folk | folk, acoustic, singer-songwriter, celtic, traditional | acoustic guitar, felt piano, autoharp, mountain dulcimer, violin, harp, flute, harmonica, accordion, clarinet, concertina, cajon, percussion, frame drum, washboard, mandolin, banjo, hurdy gurdy, jaw harp, nyckelharpa |
+| Folk | folk, acoustic, singer-songwriter, celtic, traditional | acoustic guitar, felt piano, autoharp, mountain dulcimer, violin, harp, flute, harmonica, accordion, clarinet, concertina, cajón, percussion, frame drum, washboard, mandolin, banjo, hurdy gurdy, jaw harp, nyckelharpa |
 | R&B | rnb, r&b, neo-soul, contemporary r&b, quiet storm | Rhodes, Wurlitzer, electric piano, grand piano, Clavinet, bass, drums, 808, trap hi hats, slap bass, saxophone, strings, guitar, wah guitar, handclaps, shaker |
 | Video Game | video game, game music, gaming, chiptune, 8-bit, 8 bit, retro game, pixel, arcade, boss battle, level music, rpg, jrpg, adventure game, platformer, nintendo, sega | strings, felt piano, harp, synth pad, arpeggiator, FM synth, analog synth, synth strings, bells, glockenspiel, celesta, choir, french horn, trumpet, drums, percussion, taiko drums, timpani, 808, guitar, vocoder |
 | Country | country, country rock, country pop, americana, bluegrass, country gospel, honky tonk, outlaw country, nashville | acoustic guitar, Telecaster, grand piano, dobro, lap steel guitar, pedal steel, fiddle, harmonica, mandolin, banjo, autoharp, bass, drums, upright bass, Hammond organ, accordion, washboard, mountain dulcimer |
@@ -250,7 +251,7 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 | Punk | punk, pop punk, emo, emo pop, punk rock, hardcore, y2k pop punk, indie pop punk, skate punk, melodic punk | distorted guitar, guitar, acoustic guitar, picked bass, bass, drums, kick drum, grand piano, organ |
 | Latin | latin, bossa nova, latin jazz, latin pop, salsa, tango, flamenco, afro-cuban | nylon string guitar, Rhodes, grand piano, acoustic guitar, upright bass, bass, congas, bongos, timbales, claves, shaker, guiro, cowbell, maracas, agogo bells, cabasa, trumpet, saxophone, flute, bandoneon, castanet, vibraphone, cuica, pandeiro, surdo, repinique |
 | Metal | metal, heavy metal, doom metal, progressive metal, industrial, death metal, black metal, thrash metal, nu metal, gothic metal | distorted guitar, guitar, seven-string guitar, eight-string guitar, baritone guitar, bass, drums, kick drum, timpani, synth pad, strings, choir, organ, orchestra, braams, low brass |
-| Trap | trap, dark trap, emo rap, cloud rap, cinematic trap, trap soul, melodic trap, phonk | felt piano, guitar, pluck synth, strings, bells, 808, trap hi hats, kick drum, snare drum, synth pad, ambient pad, choir, vinyl noise, flute, pizzicato strings, braams, FX risers |
+| Trap | trap, dark trap, emo rap, cloud rap, cinematic trap, trap soul, melodic trap | felt piano, guitar, pluck synth, strings, bells, 808, trap hi hats, kick drum, snare drum, synth pad, ambient pad, choir, vinyl noise, flute, pizzicato strings, braams, FX risers |
 | Retro | retro, 50s, 60s, rock and roll, doo-wop, rockabilly, garage rock, surf rock, british invasion, oldies | guitar, tremolo guitar, grand piano, honky tonk piano, upright bass, slap bass, drums, tambourine, handclaps, organ, saxophone, harmonica, finger snaps, bells |
 | Symphonic | symphonic, symphonic metal, symphonic rock, orchestral metal, orchestral rock, epic metal | distorted guitar, guitar, grand piano, strings, choir, french horn, low brass, tuba, trombone, violin, cello, orchestra, euphonium, string tremolo, bass, drums, timpani, kick drum, orchestral bass drum, harp, celesta, braams, wordless choir, solo soprano, tam tam, crash cymbal, tubular bells, xylophone |
 | Disco | disco, nu-disco, nu disco, boogie, funky house, disco house, studio 54 | Rhodes, Wurlitzer, strings, Clavinet, slap bass, wah guitar, low brass, trumpet, saxophone, flute, kick drum, hi-hat, drums, tambourine, handclaps, congas, synth strings, analog synth pads, synth pad, orchestra hit |
@@ -292,6 +293,12 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 | Bluegrass | bluegrass, newgrass, progressive bluegrass, mountain music, appalachian | banjo, mandolin, fiddle, acoustic guitar, dobro, upright bass, bass, harmonica, autoharp, mountain dulcimer, percussion, accordion, slide guitar |
 | Ska | ska, ska punk, third wave ska, two-tone, rocksteady | trumpet, trombone, saxophone, low brass, guitar, Telecaster, drums, bass, organ, felt piano, melodica, percussion, synth, distorted guitar |
 | Dancehall | dancehall, reggaeton, bashment, jamaican, caribbean | drums, hi-hat, handclaps, percussion, sub-bass, synth bass, 808, stabs, organ, synth pad, vocal chops, dub siren |
+| Phonk | phonk, classic phonk, phonk rap, dark phonk, gym phonk, aggressive phonk | dark piano, felt piano, guitar, strings, bells, 808, trap hi hats, kick drum, snare drum, cowbell, synth pad, ambient pad, vinyl noise, vocal chops, FX risers, pizzicato strings, flute, organ |
+| Drift Phonk | drift phonk, driftphonk, drift phonk beat | dark piano, electric guitar, pluck synth, strings, distorted 808, cowbell, trap hi hats, kick drum, snare drum, synth pad, choir, vocal chops, impacts, FX risers |
+| Memphis Phonk | memphis phonk, memphis rap, memphis style, old school phonk | dark piano, felt piano, strings, bells, 808, kick drum, snare drum, trap hi hats, vinyl noise, ambient pad, vocal chops, pizzicato strings, FX risers |
+| Brazilian Phonk | brazilian phonk, brazil phonk, brasil phonk, baile phonk | dark piano, pluck synth, brass stabs, strings, distorted 808, cowbell, kick drum, trap hi hats, claps, vocal chops, impacts, FX risers, synth pad, choir |
+| Phonk House | phonk house, house phonk, phonk house music | dark piano, pluck synth, strings, organ, 808, kick drum, cowbell, hi-hat, claps, synth pad, ambient pad, choir, vocal chops, FX risers, impacts |
+| Wave Phonk | wave phonk, emotional phonk, sad phonk, melodic phonk | dark piano, felt piano, strings, bells, guitar, 808, trap hi hats, kick drum, snare drum, synth pad, ambient pad, choir, vocal chops, pizzicato strings, FX risers |
 
 <!-- GENRE_TABLE_END -->
 
@@ -304,7 +311,7 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 | Tier | Role | Count | Behavior |
 |------|------|-------|----------|
 | **Foundational** | Rhythm/harmony anchors | <!-- FOUNDATIONAL_COUNT -->14<!-- /FOUNDATIONAL_COUNT --> | 0-1 injected to fill gaps |
-| **Multi-genre** | Versatile wildcards | <!-- MULTIGENRE_TIER_COUNT -->75<!-- /MULTIGENRE_TIER_COUNT --> | 1-2 injected for variety |
+| **Multi-genre** | Versatile wildcards | <!-- MULTIGENRE_TIER_COUNT -->78<!-- /MULTIGENRE_TIER_COUNT --> | 1-2 injected for variety |
 | **Orchestral** | Cinematic flavor | <!-- ORCHESTRAL_COUNT -->41<!-- /ORCHESTRAL_COUNT --> | Gated to orchestral genres only |
 
 <details>
@@ -315,7 +322,7 @@ First match wins. Keyword-detected genre always takes precedence over LLM-select
 | Tier | Count | Instruments |
 |------|-------|-------------|
 | **Foundational** | 14 | drums, kick drum, hi-hat, snare drum, bass, sub-bass, strings, synth pad, synth, analog synth, digital synth, FM synth, arpeggiator, percussion |
-| **Multi-genre** | 75 | 808, Clavinet, FX risers, Hammond organ, Moog synth, Rhodes, TB-303, TR-909, Telecaster, Wurlitzer, accordion, acoustic guitar, ambient pad, analog synth pads, autoharp, banjo, bansuri, baritone guitar, baritone saxophone, bells, bongos, braams, breakbeat, congas, cowbell, distorted 808, distorted guitar, dobro, drone, dub siren, electric piano, fiddle, finger snaps, frame drum, grand piano, granular synth, guitar, handclaps, harmonica, impacts, kalimba, low brass, mandolin, melodica, modular synth, mountain dulcimer, muted trumpet, nylon string guitar, organ, pedal steel, pluck synth, processed guitar, saxophone, shaker, shimmer pad, slap bass, stabs, supersaw, synth bass, synth choir, synth strings, tambourine, tape loops, toms, trap hi hats, tremolo guitar, trombone, upright bass, vibraphone, vinyl noise, vocal chops, vocoder, wah guitar, washboard, wavetable synth |
+| **Multi-genre** | 78 | 808, Clavinet, FX risers, Hammond organ, Moog synth, Rhodes, TB-303, TR-909, Telecaster, Wurlitzer, accordion, acoustic guitar, ambient pad, analog synth pads, autoharp, banjo, bansuri, baritone guitar, baritone saxophone, bells, bongos, braams, brass stabs, breakbeat, congas, cowbell, dark piano, distorted 808, distorted guitar, dobro, drone, dub siren, electric piano, fiddle, finger snaps, frame drum, grand piano, granular synth, guitar, handclaps, harmonica, impacts, kalimba, low brass, mandolin, melodica, modular synth, mountain dulcimer, muted trumpet, nylon string guitar, organ, pedal steel, pizzicato strings, pluck synth, processed guitar, saxophone, shaker, shimmer pad, slap bass, stabs, supersaw, synth bass, synth choir, synth strings, tambourine, tape loops, toms, trap hi hats, tremolo guitar, trombone, upright bass, vibraphone, vinyl noise, vocal chops, vocoder, wah guitar, washboard, wavetable synth |
 | **Orchestral** | 41 | celesta, glockenspiel, harp, violin, viola, cello, french horn, timpani, taiko drums, choir, wordless choir, oboe, piccolo, english horn, bass clarinet, bassoon, contrabassoon, alto flute, bass flute, tuba, bass trombone, euphonium, cornet, solo soprano, xylophone, tubular bells, crotales, triangle, suspended cymbal, crash cymbal, tam tam, mark tree, orchestral bass drum, slapstick, lute, theorbo, viola da gamba, string tremolo, col legno, sul ponticello, ondes Martenot |
 
 <!-- INSTRUMENT_CLASSES_END -->

@@ -159,6 +159,36 @@ export const GENRE_VOCAL_STYLES: Record<
     deliveries: ['Laid Back', 'Melismatic', 'Emotional', 'Smooth'],
     techniques: ['Ad Libs', 'Layered Ooh Harmonies', 'Double Tracked Lead'],
   },
+  phonk: {
+    ranges: ['Tenor', 'Baritone'],
+    deliveries: ['Laid Back', 'Raspy', 'Emotional', 'Smooth', 'Gritty'],
+    techniques: ['Ad Libs', 'Double Tracked Lead', 'Shouted Hooks'],
+  },
+  driftphonk: {
+    ranges: ['Tenor', 'Baritone'],
+    deliveries: ['Gritty', 'Aggressive', 'Energetic', 'Raspy'],
+    techniques: ['Ad Libs', 'Shouted Hooks', 'Double Tracked Lead'],
+  },
+  memphisphonk: {
+    ranges: ['Tenor', 'Baritone'],
+    deliveries: ['Laid Back', 'Raspy', 'Gritty', 'Moody'],
+    techniques: ['Ad Libs', 'Double Tracked Lead', 'Echoed Backing'],
+  },
+  brazilianphonk: {
+    ranges: ['Tenor', 'Baritone'],
+    deliveries: ['Aggressive', 'Gritty', 'Energetic', 'Raspy'],
+    techniques: ['Ad Libs', 'Shouted Hooks', 'Double Tracked Lead'],
+  },
+  phonkhouse: {
+    ranges: ['Tenor', 'Baritone'],
+    deliveries: ['Laid Back', 'Energetic', 'Gritty', 'Smooth'],
+    techniques: ['Ad Libs', 'Shouted Hooks', 'Layered Ooh Harmonies'],
+  },
+  wavephonk: {
+    ranges: ['Tenor', 'Baritone'],
+    deliveries: ['Emotional', 'Melismatic', 'Smooth', 'Vulnerable'],
+    techniques: ['Ad Libs', 'Double Tracked Lead', 'Layered Ooh Harmonies'],
+  },
   videogame: {
     ranges: ['Soprano', 'Tenor', 'Alto'],
     deliveries: ['Theatrical', 'Dramatic', 'Ethereal', 'Powerful'],
@@ -230,6 +260,30 @@ export const GENRE_BACKING_VOCALS: Record<
   hiphop: {
     wordless: ['(uh)', '(ayy)', '(what)', "(let's go)", '(aye)'],
     echoStyle: 'ad-lib the last word',
+  },
+  phonk: {
+    wordless: ['(ayy)', '(uh)', '(what)', '(aye)', '(yeah)'],
+    echoStyle: 'ad-lib the last word',
+  },
+  driftphonk: {
+    wordless: ['(ayy)', '(let\'s go)', '(yeah)', '(what)', '(oh!)'],
+    echoStyle: 'ad-lib the last word',
+  },
+  memphisphonk: {
+    wordless: ['(uh)', '(ayy)', '(yeah)', '(what)'],
+    echoStyle: 'echoed whisper on the last word',
+  },
+  brazilianphonk: {
+    wordless: ['(ayy)', '(uh)', '(let\'s go)', '(oh!)', '(yeah)'],
+    echoStyle: 'ad-lib the last word',
+  },
+  phonkhouse: {
+    wordless: ['(ayy)', '(hey)', '(uh)', '(go!)', '(yeah)'],
+    echoStyle: 'ad-lib the last word',
+  },
+  wavephonk: {
+    wordless: ['(ooh)', '(ayy)', '(yeah)', '(mmm)', '(uh)'],
+    echoStyle: 'soft echo of key phrase',
   },
   jazz: {
     wordless: ['(mmm)', '(ooh)', '(da da da)', '(doo)'],

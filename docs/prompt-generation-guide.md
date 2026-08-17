@@ -748,7 +748,7 @@ Here's exactly how the app makes choices when you generate a prompt:
 
 ### Genre Selection
 
-The genre system includes **60 genres** with support for aliases and multi-genre detection.
+The genre system includes **66 genres** with support for aliases and multi-genre detection.
 
 #### Basic Selection
 
@@ -1018,7 +1018,7 @@ Genre-specific recording environments (141 contexts across 18 genres):
 
 ### Genre-Specific Tag Weights
 
-Each of the 60 genres has tailored probabilities for tag categories:
+Each of the 66 genres has tailored probabilities for tag categories:
 
 | Genre Family | Vocal | Spatial | Harmonic | Dynamic | Temporal |
 |--------------|-------|---------|----------|---------|----------|
@@ -1115,7 +1115,7 @@ All choices come from carefully curated, tested databases:
 
 | Data Source | Size | Description |
 |-------------|------|-------------|
-| **Genre Registry** | 60 genres | Authentic instrument pools, compatible combinations |
+| **Genre Registry** | 66 genres | Authentic instrument pools, compatible combinations |
 | **Instrument Database** | 500+ instruments | 250+ aliases, exclusion rules, category organization |
 | **Mood Categories** | 20 categories | 8-12 compatible moods each, genre mappings |
 | **Compound Moods** | 25 moods | Genre affinities for contextual selection |
@@ -1129,7 +1129,7 @@ All choices come from carefully curated, tested databases:
 | **Harmonic Keywords** | 9 keywords | jazz, progressive, modal, chromatic, etc. |
 | **Ensemble Presets** | 10 presets | Genre compatibility mappings |
 | **Genre Aliases** | 90+ mappings | Hip-hop, R&B, metal, electronic, jazz variants |
-| **Tag Weights** | 60 genres | 5 weight categories per genre with energy adjustment |
+| **Tag Weights** | 66 genres | 5 weight categories per genre with energy adjustment |
 | **Conflict Rules** | 5 rules | Instrument-production coherence |
 | **Title Words** | 269 words | 5 categories, 220+ keyword mappings |
 | **Title Patterns** | 200 patterns | 23 genre-specific sets + defaults |
@@ -1310,7 +1310,7 @@ The deterministic generation system provides:
 - **Topic-Aware** - 220+ keywords map descriptions to relevant titles
 - **Rich Vocabulary** - 269 words × 200 patterns = 50,000+ unique titles
 - **Smart Aliases** - 90+ genre mappings for flexible input
-- **Genre Weights** - 60 genres with tailored tag probabilities
+- **Genre Weights** - 66 genres with tailored tag probabilities
 - **Enhanced Enrichment** - Era, tempo, intent, and cultural context extraction
 - **Keyword Fallback** - Deterministic extraction when LLM unavailable
 
