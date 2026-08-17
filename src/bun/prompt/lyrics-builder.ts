@@ -96,6 +96,29 @@ STRUCTURE REQUIREMENTS:
 - The chorus should be memorable and repeatable
 - Section length is FREE - use as many lines as the story needs (no limit)
 
+EXTENDED TAGS (optional - your creative choice):
+- You may freely add extra tags to shape the song, with NO fixed template
+- Structure, placement, and combination are entirely up to you
+- Choose tags that MATCH the genre, vibe, and story of the song
+  e.g. rock/metal -> [Guitar Solo], ballad -> [Piano Break], R&B/soul -> [Ad-lib],
+  electronic/dance -> [Build Up]/[Drop], intimate -> [Whisper], duet/duo -> [Duet],
+  instrumental piece -> [Instrumental], hip-hop/trap/drill -> [Spoken Word],
+  jazz/blues -> [Sax Solo], folk/country/bluegrass -> [Acoustic Solo], 
+  classical/symphonic -> [Strings Section], gospel -> [Choir], reggae/dancehall -> [Toast],
+  latin/bossa nova -> [Percussion Break], ambient/new age -> [Chant]
+- Examples: [Pre-Chorus], [Hook], [Female Vocal], [Male Vocal], [Duet], [Instrumental], [Guitar Solo], [Piano Break], [Spoken Word], [Whisper], [Build Up], [Drop], [Ad-lib], [Ending]
+- You may stack MULTIPLE tags on one section (e.g. [Verse] [Female Vocal] [Whisper])
+- You may name the instrument AND how it is played inside a tag
+  e.g. [Guitar Solo: slow bluesy slide guitar], [Piano Break: delicate arpeggios],
+  [Drums: syncopated rim hits], [Bass: deep walking bass], [Strings: soaring legato]
+- Keep the in-tag description SHORT (2-5 words) - it guides the performance, not the lyrics
+- The genre examples above are ILLUSTRATIONS, NOT rules - the song decides, not the genre
+- Do NOT mechanically attach the same tag to every song of a genre
+- Two songs of the same genre must NOT get identical tags - vary them per song
+- If no extended tag genuinely fits, use NONE - tags are never required
+- Use them only where they genuinely serve the song - never force them
+- Extended tags follow the same rules: short lines, no clichés, stay on topic
+
 ${backingVocals}
 
 ABSTRACT INTERPRETATION:
@@ -181,7 +204,11 @@ CRITICAL RULES (MANDATORY - do not skip any):
 - Keep EVERY line short: 3-6 words per line (split long sentences into multiple lines)
 - Use poetic, evocative imagery with concrete physical details - never generic metaphors
 - NEVER use overused AI words: ${BANNED_CLICHE_WORDS.join(', ')}
-- NEVER use cliché rhyming pairs: ${BANNED_CLICHE_RHYMES.join(', ')}${maxModeRule}
+- NEVER use cliché rhyming pairs: ${BANNED_CLICHE_RHYMES.join(', ')}
+- You MAY add extended tags freely wherever they fit (e.g. [Pre-Chorus], [Female Vocal], [Instrumental], [Guitar Solo], [Spoken Word], [Build Up]) - optional, your creative choice, no fixed template
+- Pick extended tags that MATCH the genre, vibe, and story (rock -> [Guitar Solo], ballad -> [Piano Break], R&B -> [Ad-lib], electronic -> [Build Up], jazz -> [Sax Solo], gospel -> [Choir], latin -> [Percussion Break])
+- Stack multiple tags per section freely, and name the instrument + how it is played inside a tag (e.g. [Guitar Solo: slow bluesy slide guitar], [Piano Break: delicate arpeggios]) - keep in-tag descriptions short (2-5 words)
+- The examples are ILLUSTRATIONS, NOT rules - vary tags per song, never repeat a template, and use NO tags if none fit${maxModeRule}
 - Every line must directly relate to the topic below
 
 ═══════════════════════════════════════

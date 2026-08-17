@@ -68,6 +68,26 @@ describe('lyrics-builder', () => {
       expect(prompt).toContain('soul/control');
     });
 
+    it('allows optional extended tags without a fixed template', () => {
+      const prompt = buildLyricsSystemPrompt(false);
+      expect(prompt).toContain('EXTENDED TAGS (optional');
+      expect(prompt).toContain('NO fixed template');
+      expect(prompt).toContain('[Female Vocal]');
+      expect(prompt).toContain('[Spoken Word]');
+      expect(prompt).toContain('never force them');
+      expect(prompt).toContain('MATCH the genre, vibe, and story');
+      expect(prompt).toContain('[Guitar Solo]');
+      expect(prompt).toContain('[Sax Solo]');
+      expect(prompt).toContain('[Choir]');
+      expect(prompt).toContain('[Percussion Break]');
+      expect(prompt).toContain('ILLUSTRATIONS, NOT rules');
+      expect(prompt).toContain('vary them per song');
+      expect(prompt).toContain('use NONE - tags are never required');
+      expect(prompt).toContain('stack MULTIPLE tags');
+      expect(prompt).toContain('slow bluesy slide guitar');
+      expect(prompt).toContain('2-5 words');
+    });
+
     it('includes backing vocals guidance when useSunoTags is true', () => {
       const prompt = buildLyricsSystemPrompt(false, true);
       expect(prompt).toContain('BACKING VOCALS');
@@ -166,6 +186,13 @@ describe('lyrics-builder', () => {
       expect(prompt).toContain('fire/desire');
       expect(prompt).toContain('heart/apart');
       expect(prompt).toContain('concrete physical details');
+    });
+
+    it('allows optional extended tags in user prompt', () => {
+      const prompt = buildLyricsUserPrompt('A song about the ocean', 'ambient', 'peaceful');
+      expect(prompt).toContain('extended tags freely');
+      expect(prompt).toContain('[Female Vocal]');
+      expect(prompt).toContain('no fixed template');
     });
   });
 
