@@ -14,7 +14,14 @@ export function cleanLyrics(lyrics: string | undefined): string | undefined {
   let text = lyrics.trim();
 
   // Strip markdown code fences the model sometimes wraps lyrics in
-  text = text.replace(/^```[a-z]*\s*\n?/i, '').replace(/\n?```\s*$/, '').trim();
+  text = text
+    .replace(/^```[a-z]*\s*\n?/i, '')
+    .replace(/\n?```\s*$/, '')
+    .trim();
+
+  // Max Mode used to ask the model for this internal delimiter. It is not
+  // lyric content and must never reach the editor, saved session, or clipboard.
+  text = text.replace(/^\s*\/\/\/\*{5}\/\/\/\s*$/gm, '').trim();
 
   // Strip a stray leading title/chatter line the model adds before the first
   // section tag (e.g. `"My Song Title"`, `Title: My Song Title`, "Here are...")
@@ -23,7 +30,10 @@ export function cleanLyrics(lyrics: string | undefined): string | undefined {
   if (firstTagIndex > 0) {
     const prefix = lines.slice(0, firstTagIndex).join(' ').trim();
     const looksLikeTitle = /^["'“”].{1,60}["'“”]$/.test(prefix);
-    const looksLikeChatter = /^(title|song title|here are|here is|lyrics)(\s*:|:|\s+)/i.test(prefix);
+    const looksLikeChatter =
+      /^(title|song title|here are|here is|lyrics|extension|extended lyrics)(\s*:|:|\s+)/i.test(
+        prefix
+      );
     if (looksLikeTitle || looksLikeChatter) {
       text = lines.slice(firstTagIndex).join('\n').trim();
     }
@@ -32,10 +42,7 @@ export function cleanLyrics(lyrics: string | undefined): string | undefined {
   return text || undefined;
 }
 
-export async function postProcess(
-  text: string,
-  getModel: () => LanguageModel
-): Promise<string> {
+export async function postProcess(text: string, getModel: () => LanguageModel): Promise<string> {
   return postProcessPrompt(text, {
     maxChars: APP_CONSTANTS.MAX_PROMPT_CHARS,
     minChars: APP_CONSTANTS.MIN_PROMPT_CHARS,

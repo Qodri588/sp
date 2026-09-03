@@ -80,11 +80,26 @@ export const EMPTY_ADVANCED_SELECTION = {
   sunoStyles: [],
 } as const satisfies AdvancedSelection;
 
+export interface LyricsExtensionPlacement {
+  /** Existing section heading after which the extension should be inserted. */
+  insertAfter: string;
+  /** One-based occurrence when a heading appears more than once. */
+  occurrence: number;
+}
+
+export interface LyricsExtensionBlock {
+  extendText: string;
+  placement: LyricsExtensionPlacement;
+}
+
 export interface PromptVersion {
   id: string;
   content: string;
   title?: string;
   lyrics?: string;
+  lyricsExtension?: string;
+  lyricsExtensionPlacement?: LyricsExtensionPlacement;
+  lyricsExtensions?: LyricsExtensionBlock[];
   feedback?: string;
   lockedPhrase?: string;
   timestamp: string;
@@ -98,6 +113,9 @@ export interface PromptSession {
   currentPrompt: string;
   currentTitle?: string;
   currentLyrics?: string;
+  lyricsExtension?: string;
+  lyricsExtensionPlacement?: LyricsExtensionPlacement;
+  lyricsExtensions?: LyricsExtensionBlock[];
   versionHistory: PromptVersion[];
   createdAt: string;
   updatedAt: string;

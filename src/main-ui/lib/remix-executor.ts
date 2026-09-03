@@ -87,10 +87,17 @@ export async function executePromptRemix(
  * Executes a single-field remix action (title or lyrics only, prompt unchanged)
  */
 export async function executeSingleFieldRemix<
-  T extends { title?: string; lyrics?: string; debugTrace?: TraceRun },
+  T extends {
+    title?: string;
+    lyrics?: string;
+    extendText?: string;
+    placement?: PromptSession['lyricsExtensionPlacement'];
+    extensions?: PromptSession['lyricsExtensions'];
+    debugTrace?: TraceRun;
+  },
 >(
   deps: RemixExecutorDeps,
-  action: 'remixTitle' | 'remixLyrics',
+  action: 'remixTitle' | 'remixLyrics' | 'extendLyrics',
   apiCall: () => Promise<T>,
   getUpdate: (r: T) => Partial<PromptSession>,
   label: string,
@@ -126,6 +133,14 @@ export async function executeSingleFieldRemix<
         versionId: generateId(),
         title: update.currentTitle ?? currentSession.currentTitle,
         lyrics: update.currentLyrics ?? currentSession.currentLyrics,
+        lyricsExtension:
+          'lyricsExtension' in update ? update.lyricsExtension : currentSession.lyricsExtension,
+        lyricsExtensionPlacement:
+          'lyricsExtensionPlacement' in update
+            ? update.lyricsExtensionPlacement
+            : currentSession.lyricsExtensionPlacement,
+        lyricsExtensions:
+          'lyricsExtensions' in update ? update.lyricsExtensions : currentSession.lyricsExtensions,
       },
       `[${label}]`
     );

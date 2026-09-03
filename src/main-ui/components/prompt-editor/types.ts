@@ -3,6 +3,8 @@ import { type ChatMessage } from '@/lib/chat-utils';
 import { type MoodCategory } from '@bun/mood';
 import {
   type TraceRun,
+  type LyricsExtensionPlacement,
+  type LyricsExtensionBlock,
   type EditorMode,
   type AdvancedSelection,
   type PromptMode,
@@ -21,6 +23,10 @@ export interface OutputState {
   currentTitle?: string;
   /** Optional generated lyrics */
   currentLyrics?: string;
+  /** Optional AI-generated extension block for the lyrics */
+  lyricsExtension?: string;
+  lyricsExtensionPlacement?: LyricsExtensionPlacement;
+  lyricsExtensions?: LyricsExtensionBlock[];
 }
 
 /** State for user input fields in full prompt mode */
@@ -98,6 +104,7 @@ export interface RemixHandlers {
   onRemixRecording: () => void;
   onRemixTitle: () => void;
   onRemixLyrics: () => void;
+  onExtendLyrics: () => void;
 }
 
 /** Handlers for editor operations and state changes */

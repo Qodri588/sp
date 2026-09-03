@@ -29,8 +29,18 @@ function usePromptEditorOutputState(
       currentPrompt: currentSession?.currentPrompt || '',
       currentTitle: currentSession?.currentTitle,
       currentLyrics: currentSession?.currentLyrics,
+      lyricsExtension: currentSession?.lyricsExtension,
+      lyricsExtensionPlacement: currentSession?.lyricsExtensionPlacement,
+      lyricsExtensions: currentSession?.lyricsExtensions,
     }),
-    [currentSession?.currentPrompt, currentSession?.currentTitle, currentSession?.currentLyrics]
+    [
+      currentSession?.currentPrompt,
+      currentSession?.currentTitle,
+      currentSession?.currentLyrics,
+      currentSession?.lyricsExtension,
+      currentSession?.lyricsExtensionPlacement,
+      currentSession?.lyricsExtensions,
+    ]
   );
 }
 
@@ -107,6 +117,7 @@ function usePromptEditorRemixHandlers({
   handleRemixRecording,
   handleRemixTitle,
   handleRemixLyrics,
+  handleExtendLyrics,
 }: Pick<
   ReturnType<typeof useGenerationContext>,
   | 'handleRemix'
@@ -118,6 +129,7 @@ function usePromptEditorRemixHandlers({
   | 'handleRemixRecording'
   | 'handleRemixTitle'
   | 'handleRemixLyrics'
+  | 'handleExtendLyrics'
 >): RemixHandlers {
   return useMemo(
     () => ({
@@ -130,6 +142,7 @@ function usePromptEditorRemixHandlers({
       onRemixRecording: handleRemixRecording,
       onRemixTitle: handleRemixTitle,
       onRemixLyrics: handleRemixLyrics,
+      onExtendLyrics: handleExtendLyrics,
     }),
     [
       handleRemix,
@@ -141,6 +154,7 @@ function usePromptEditorRemixHandlers({
       handleRemixRecording,
       handleRemixTitle,
       handleRemixLyrics,
+      handleExtendLyrics,
     ]
   );
 }
@@ -275,6 +289,7 @@ function usePromptEditorProps(): PromptEditorProps {
     handleRemixRecording,
     handleRemixTitle,
     handleRemixLyrics,
+    handleExtendLyrics,
     handleGenerate,
     handleGenerateQuickVibes,
     handleRefineQuickVibes,
@@ -315,6 +330,7 @@ function usePromptEditorProps(): PromptEditorProps {
     handleRemixRecording,
     handleRemixTitle,
     handleRemixLyrics,
+    handleExtendLyrics,
   });
   const handlers = usePromptEditorHandlers(editorActions, settings, {
     handleGenerate,

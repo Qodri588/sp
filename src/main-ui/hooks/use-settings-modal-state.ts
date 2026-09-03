@@ -21,6 +21,7 @@ export interface SettingsModalState {
   showKey: boolean;
   saving: boolean;
   loading: boolean;
+  aiSettingsFromEnv: boolean;
   error: string | null;
 }
 
@@ -64,6 +65,7 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
   const [showKey, setShowKey] = useState((): boolean => false);
   const [saving, setSaving] = useState((): boolean => false);
   const [loading, setLoading] = useState((): boolean => true);
+  const [aiSettingsFromEnv, setAiSettingsFromEnv] = useState((): boolean => false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -83,6 +85,7 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
         setApiKeys(settings.apiKeys ?? { ...DEFAULT_API_KEYS });
         setOpenaiBaseUrl(settings.openaiBaseUrl || '');
         setModel(settings.model ?? '');
+        setAiSettingsFromEnv(settings.aiSettingsFromEnv ?? false);
         setUseSunoTags(settings.useSunoTags);
         setDebugMode(settings.debugMode);
         setMaxMode(settings.maxMode);
@@ -98,13 +101,10 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
     void loadSettings();
   }, [isOpen]);
 
-  const handleProviderChange = useCallback(
-    (newProvider: AIProvider): void => {
-      setProvider(newProvider);
-      setShowKey(false);
-    },
-    []
-  );
+  const handleProviderChange = useCallback((newProvider: AIProvider): void => {
+    setProvider(newProvider);
+    setShowKey(false);
+  }, []);
 
   const handleApiKeyChange = useCallback(
     (value: string): void => {
@@ -147,7 +147,17 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
         setSaving(false);
       }
     },
-    [provider, model, openaiBaseUrl, useSunoTags, debugMode, maxMode, lyricsMode, storyMode, apiKeys]
+    [
+      provider,
+      model,
+      openaiBaseUrl,
+      useSunoTags,
+      debugMode,
+      maxMode,
+      lyricsMode,
+      storyMode,
+      apiKeys,
+    ]
   );
 
   const state: SettingsModalState = {
@@ -163,6 +173,7 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
     showKey,
     saving,
     loading,
+    aiSettingsFromEnv,
     error,
   };
 

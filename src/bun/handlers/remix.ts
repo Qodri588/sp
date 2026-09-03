@@ -15,6 +15,7 @@ import {
   RemixRecordingSchema,
   RemixTitleSchema,
   RemixLyricsSchema,
+  ExtendLyricsSchema,
 } from '@shared/schemas';
 import { enforceTraceSizeCap } from '@shared/trace';
 import { validatePrompt } from '@shared/validation';
@@ -34,6 +35,7 @@ type RemixHandlers = Pick<
   | 'remixRecording'
   | 'remixTitle'
   | 'remixLyrics'
+  | 'extendLyrics'
 >;
 
 interface RemixActionResult {
@@ -129,6 +131,17 @@ export function createRemixHandlers(aiEngine: AIEngine): RemixHandlers {
       return runSingleFieldRemix('remixLyrics', async () => {
         const result = await aiEngine.remixLyrics(currentPrompt, originalInput, lyricsTopic);
         return { lyrics: result.lyrics };
+      });
+    },
+    extendLyrics: async (params) => {
+      const { currentPrompt, currentLyrics } = validate(ExtendLyricsSchema, params);
+      return runSingleFieldRemix('extendLyrics', async () => {
+        const result = await aiEngine.extendLyrics(currentLyrics, currentPrompt);
+        return {
+          extendText: result.extendText,
+          placement: result.placement,
+          extensions: result.extensions,
+        };
       });
     },
   };

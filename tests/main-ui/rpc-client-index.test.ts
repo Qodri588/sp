@@ -39,6 +39,7 @@ const methodCases: RpcClientMethodCase[] = [
   },
   { clientMethod: 'remixTitle', rpcMethod: 'remixTitle', params: { case: 'remixTitle' } },
   { clientMethod: 'remixLyrics', rpcMethod: 'remixLyrics', params: { case: 'remixLyrics' } },
+  { clientMethod: 'extendLyrics', rpcMethod: 'extendLyrics', params: { case: 'extendLyrics' } },
   { clientMethod: 'getApiKey', rpcMethod: 'getApiKey', params: { case: 'getApiKey' } },
   { clientMethod: 'setApiKey', rpcMethod: 'setApiKey', params: { case: 'setApiKey' } },
   { clientMethod: 'getModel', rpcMethod: 'getModel', params: { case: 'getModel' } },

@@ -10,6 +10,7 @@ import {
 } from '@bun/prompt/lyrics-builder';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
+import { cleanLyrics } from '@bun/ai/utils';
 import { z } from 'zod';
 
 import type { TraceCollector } from '@bun/trace';
@@ -141,10 +142,10 @@ export async function generateLyrics(
       traceLabel: traceRuntime?.traceLabel,
     });
 
-    return { lyrics: text.trim(), debugInfo };
+    return { lyrics: cleanLyrics(text) ?? text.trim(), debugInfo };
   } catch (error: unknown) {
     log.warn('generateLyrics:failed', { error: getErrorMessage(error) });
-    return { lyrics: '[VERSE]\nLyrics generation failed...', debugInfo };
+    throw error;
   }
 }
 

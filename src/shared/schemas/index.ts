@@ -37,6 +37,7 @@ export {
   RemixRecordingSchema,
   RemixTitleSchema,
   RemixLyricsSchema,
+  ExtendLyricsSchema,
   type RemixInstrumentsInput,
   type RemixGenreInput,
   type RemixMoodInput,
@@ -44,6 +45,7 @@ export {
   type RemixRecordingInput,
   type RemixTitleInput,
   type RemixLyricsInput,
+  type ExtendLyricsInput,
 } from './remix';
 
 // Settings schemas

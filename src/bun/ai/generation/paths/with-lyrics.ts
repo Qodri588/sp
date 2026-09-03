@@ -20,6 +20,7 @@ import {
 import { extractStructuredDataForStory, tryStoryMode } from '@bun/ai/story-generator';
 import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
+import { AIGenerationError } from '@shared/errors';
 
 import type { GenerateInitialOptions, TraceRuntime } from '@bun/ai/generation/types';
 import type { GenerationConfig, GenerationResult } from '@bun/ai/types';
@@ -58,6 +59,13 @@ export async function generateWithLyrics(
   const rng = runtime?.rng ?? Math.random;
   const trace = runtime?.trace;
   const getModelFn = config.getModel;
+  const llmAvailable = config.isLLMAvailable();
+
+  if (!llmAvailable) {
+    throw new AIGenerationError(
+      'Lyrics generation requires an available language model. Configure an AI provider and API key, then try again.'
+    );
+  }
 
   // 1. Determine genre detection strategy (prioritizes description keywords over LLM topic detection)
   const { descriptionGenre, willDetectFromTopic } = resolveGenreStrategy(
@@ -91,9 +99,6 @@ export async function generateWithLyrics(
   const genre = extractGenreFromPrompt(promptText);
   const mood = extractMoodFromPrompt(promptText);
 
-  // 4. Generate title and lyrics via LLM (parallel for performance)
-  // Using Promise.all intentionally: if either fails, we want the whole operation to fail
-  // since both title and lyrics are required for a complete generation result
   const topic = lyricsTopic?.trim() || description;
   const [titleResult, lyricsResult] = await Promise.all([
     generateTitle({
@@ -115,7 +120,6 @@ export async function generateWithLyrics(
       { trace, traceLabel: 'lyrics.generate' }
     ),
   ]);
-
   const title = cleanTitle(titleResult.title);
   const lyrics = cleanLyrics(lyricsResult.lyrics);
 

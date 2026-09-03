@@ -45,6 +45,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
             openaiBaseUrl={state.openaiBaseUrl}
             showKey={state.showKey}
             loading={state.loading}
+            aiSettingsFromEnv={state.aiSettingsFromEnv}
             error={state.error}
             onProviderChange={actions.handleProviderChange}
             onApiKeyChange={actions.handleApiKeyChange}
@@ -57,6 +58,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
             model={state.model}
             openaiBaseUrl={state.openaiBaseUrl}
             loading={state.loading}
+            readOnly={state.aiSettingsFromEnv}
             onModelChange={actions.setModel}
           />
 

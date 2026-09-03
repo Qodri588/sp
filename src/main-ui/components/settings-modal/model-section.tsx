@@ -9,12 +9,14 @@ interface ModelSectionProps {
   model: string;
   openaiBaseUrl: string;
   loading: boolean;
+  readOnly: boolean;
   onModelChange: (model: string) => void;
 }
 
 export function ModelSection({
   model,
   loading,
+  readOnly,
   onModelChange,
 }: ModelSectionProps): ReactElement {
   return (
@@ -26,12 +28,14 @@ export function ModelSection({
         onChange={(e) => {
           onModelChange(e.target.value);
         }}
-        disabled={loading}
+        disabled={loading || readOnly}
         placeholder="e.g. gpt-5-mini, claude-sonnet-4-5-20250929"
         className="bg-input"
       />
       <p className="ui-helper">
-        Enter the model ID accepted by your AI provider
+        {readOnly
+          ? "Model is loaded from the server's .env file."
+          : 'Enter the model ID accepted by your AI provider'}
       </p>
     </div>
   );

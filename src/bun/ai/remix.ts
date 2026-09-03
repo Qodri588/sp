@@ -43,16 +43,21 @@ export async function remixLyrics(
   useSunoTags = false,
   _isOffline = false,
   _ollamaEndpoint?: string,
-  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string },
+  feedback?: string
 ): Promise<{ lyrics: string }> {
   const genre = extractGenreFromPrompt(currentPrompt);
   const mood = extractMoodFromPrompt(currentPrompt);
   const topicForLyrics = lyricsTopic?.trim() || originalInput;
+  const feedbackForLyrics = feedback?.trim();
+  const lyricsDescription = feedbackForLyrics
+    ? `${topicForLyrics}\n\nAdditional creative direction:\n${feedbackForLyrics}`
+    : topicForLyrics;
 
   const timeoutMs = APP_CONSTANTS.AI.TIMEOUT_MS;
 
   const result = await generateLyrics(
-    topicForLyrics,
+    lyricsDescription,
     genre,
     mood,
     maxMode,

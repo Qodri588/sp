@@ -38,6 +38,11 @@ export const RemixLyricsSchema = z.object({
   lyricsTopic: z.string().max(APP_CONSTANTS.MAX_LYRICS_TOPIC_CHARS).optional(),
 });
 
+export const ExtendLyricsSchema = z.object({
+  currentPrompt: CurrentPromptSchema,
+  currentLyrics: z.string().trim().min(1, 'Current lyrics are required'),
+});
+
 export type RemixInstrumentsInput = z.infer<typeof RemixInstrumentsSchema>;
 export type RemixGenreInput = z.infer<typeof RemixGenreSchema>;
 export type RemixMoodInput = z.infer<typeof RemixMoodSchema>;
@@ -45,3 +50,4 @@ export type RemixStyleTagsInput = z.infer<typeof RemixStyleTagsSchema>;
 export type RemixRecordingInput = z.infer<typeof RemixRecordingSchema>;
 export type RemixTitleInput = z.infer<typeof RemixTitleSchema>;
 export type RemixLyricsInput = z.infer<typeof RemixLyricsSchema>;
+export type ExtendLyricsInput = z.infer<typeof ExtendLyricsSchema>;

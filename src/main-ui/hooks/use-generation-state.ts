@@ -15,6 +15,7 @@ export type ActiveGeneratingAction =
   | 'remixRecording'
   | 'remixTitle'
   | 'remixLyrics'
+  | 'extendLyrics'
   | 'quickVibes'
   | 'creativeBoost';
 

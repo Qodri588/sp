@@ -50,6 +50,7 @@ interface SettingsLoaderReturn {
   storyMode: boolean;
   useLocalLLM: boolean;
   apiKeys: APIKeys;
+  backendLLMAvailable: boolean;
   setMaxMode: (mode: boolean) => Promise<void>;
   setLyricsMode: (mode: boolean) => Promise<void>;
   setStoryMode: (mode: boolean) => Promise<void>;
@@ -64,6 +65,7 @@ function useSettingsLoader(): SettingsLoaderReturn {
   const [storyMode, setStoryMode] = useState(false);
   const [useLocalLLM, _setUseLocalLLM] = useState(false);
   const [apiKeys, setApiKeys] = useState(DEFAULT_API_KEYS);
+  const [backendLLMAvailable, setBackendLLMAvailable] = useState(false);
 
   const loadAllSettings = useCallback(async () => {
     try {
@@ -74,6 +76,7 @@ function useSettingsLoader(): SettingsLoaderReturn {
         setLyricsMode(result.value.lyricsMode ?? false);
         setStoryMode(result.value.storyMode ?? false);
         setApiKeys(result.value.apiKeys ?? DEFAULT_API_KEYS);
+        setBackendLLMAvailable(result.value.llmAvailable ?? false);
       }
     } catch (error: unknown) {
       log.error('loadAllSettings:failed', error);
@@ -141,6 +144,7 @@ function useSettingsLoader(): SettingsLoaderReturn {
     storyMode,
     useLocalLLM,
     apiKeys,
+    backendLLMAvailable,
     setMaxMode: handleSetMaxMode,
     setLyricsMode: handleSetLyricsMode,
     setStoryMode: handleSetStoryMode,
@@ -174,15 +178,15 @@ export const SettingsProvider = ({ children }: { children: ReactNode }): ReactNo
     }
   }, [settingsOpen, reloadSettings]);
 
-  // Derive LLM availability: when running via web (Vite), always show UI as interactive.
-  // Actual API failures surface as toast errors instead of blocking the UI entirely.
-  // In native Electrobun, only enable when API key is configured.
+  // The UI must reflect the backend's actual configuration. The web client has
+  // no separate model runtime, so claiming availability here would allow a
+  // request that the backend cannot execute.
   const hasAnyApiKey = Boolean(
     settings?.apiKeys?.groq?.trim() ||
     settings?.apiKeys?.openai?.trim() ||
     settings?.apiKeys?.anthropic?.trim()
   );
-  const isLLMAvailable = hasAnyApiKey || typeof (globalThis as any).electrobun === 'undefined';
+  const isLLMAvailable = settings.backendLLMAvailable || hasAnyApiKey;
 
   const contextValue = useMemo<SettingsContextType>(
     () => ({

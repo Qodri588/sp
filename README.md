@@ -13,6 +13,11 @@ bun install
 bun start
 ```
 
+The default `bun start` command launches the browser version at
+`http://localhost:5173`. It runs the React UI through Vite and the Bun API on
+port `3001`. For a production-like single-server run, use `bun run web:start`;
+it serves the compiled UI and API at `http://localhost:3000`.
+
 Run tests: `bun test` | Lint: `bun run lint` | Typecheck: `bun run typecheck` | Full validate: `bun run validate`
 
 <details>
@@ -20,7 +25,8 @@ Run tests: `bun test` | Lint: `bun run lint` | Typecheck: `bun run typecheck` | 
 
 | Command | Description |
 |---------|-------------|
-| `bun run build` | Development build (current platform) |
+| `bun run build` | Production web build (`dist-web/`) |
+| `bun run web:start` | Build and serve the web app on port 3000 |
 | `bun run build:stable` | Production (current platform) |
 | `bun run build:stable:all` | Production (all platforms) |
 | `bun run build:macos` | macOS (Intel & Apple Silicon) |
@@ -460,7 +466,7 @@ jazz fusion, jazz funk, jazz hip-hop, nu jazz, acid jazz, smooth jazz, jazz swin
 | `src/bun/trace/` | Debug trace collection and decision logging |
 | `src/main-ui/` | React 19 frontend with shadcn/ui components |
 | `src/shared/` | Types, Zod schemas, constants, utilities |
-| `src/web/` | Web server mode with Bun.serve + Vite |
+| `src/web/` | Browser entry point and Bun web server (static UI + API) |
 
 <details>
 <summary><strong>Generation Dataflow</strong></summary>

@@ -77,6 +77,7 @@ export interface GenerationContextType
   handleRemixRecording: () => Promise<void>;
   handleRemixTitle: () => Promise<void>;
   handleRemixLyrics: () => Promise<void>;
+  handleExtendLyrics: () => Promise<void>;
   // Quick Vibes actions
   handleGenerateQuickVibes: (
     category: QuickVibesCategory | null,

@@ -126,6 +126,10 @@ export class AIConfig {
     return this.model;
   }
 
+  getOpenaiBaseUrl(): string | null {
+    return this.openaiBaseUrl;
+  }
+
   isDebugMode(): boolean {
     return this.debugMode;
   }

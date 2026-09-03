@@ -21,6 +21,8 @@ import type {
   RemixTitleResponse,
   RemixLyricsParams,
   RemixLyricsResponse,
+  ExtendLyricsParams,
+  ExtendLyricsResponse,
   SetDebugModeParams,
   SaveAllSettingsParams,
   GetAllSettingsResponse,
@@ -59,6 +61,7 @@ export interface RPCHandlers {
   remixRecording: (params: RemixRecordingParams) => Promise<RemixRecordingResponse>;
   remixTitle: (params: RemixTitleParams) => Promise<RemixTitleResponse>;
   remixLyrics: (params: RemixLyricsParams) => Promise<RemixLyricsResponse>;
+  extendLyrics: (params: ExtendLyricsParams) => Promise<ExtendLyricsResponse>;
   getHistory: (params: Record<string, never>) => Promise<GetHistoryResponse>;
   saveSession: (params: SaveSessionParams) => Promise<{ success: boolean }>;
   deleteSession: (params: DeleteSessionParams) => Promise<{ success: boolean }>;
@@ -131,6 +134,10 @@ export interface SunoRPCSchema {
       remixLyrics: {
         params: RemixLyricsParams;
         response: RemixLyricsResponse;
+      };
+      extendLyrics: {
+        params: ExtendLyricsParams;
+        response: ExtendLyricsResponse;
       };
       getHistory: {
         params: Record<string, never>;

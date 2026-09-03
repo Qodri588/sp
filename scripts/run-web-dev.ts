@@ -1,10 +1,18 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 
-function run(label: string, command: string, args: string[]): ReturnType<typeof spawn> {
+function run(
+  label: string,
+  command: string,
+  args: string[],
+  extraEnv: Record<string, string> = {}
+): ReturnType<typeof spawn> {
   const child = spawn(command, args, {
     stdio: 'pipe',
-    shell: true,
-    env: { ...process.env, FORCE_COLOR: '1' },
+    env: {
+      ...process.env,
+      FORCE_COLOR: '1',
+      ...extraEnv,
+    },
   });
 
   child.stdout?.on('data', (data: Buffer) => {
@@ -22,19 +30,27 @@ function run(label: string, command: string, args: string[]): ReturnType<typeof 
   return child;
 }
 
-console.log('Starting web app...\n');
+console.log('Starting web app at http://localhost:5173\n');
 
-const server = run('api', 'bun', ['run', 'src/web/server.ts']);
-const ui = run('ui', 'bunx', ['vite', '--config', 'vite.config.ts']);
-
-process.on('SIGINT', () => {
-  server.kill();
-  ui.kill();
-  process.exit();
+const apiPort = process.env.API_PORT ?? '3001';
+const server = run('api', 'bun', ['run', 'src/web/server.ts'], {
+  PORT: apiPort,
+});
+const ui = run('ui', 'bun', ['run', 'vite', '--', '--config', 'vite.config.ts'], {
+  API_PORT: apiPort,
 });
 
-process.on('SIGTERM', () => {
-  server.kill();
-  ui.kill();
-  process.exit();
-});
+function stop(): void {
+  for (const child of [server, ui]) {
+    if (!child.pid) continue;
+    if (process.platform === 'win32') {
+      spawnSync('taskkill', ['/pid', String(child.pid), '/t', '/f'], { stdio: 'ignore' });
+    } else {
+      child.kill('SIGTERM');
+    }
+  }
+  process.exit(0);
+}
+
+process.once('SIGINT', stop);
+process.once('SIGTERM', stop);

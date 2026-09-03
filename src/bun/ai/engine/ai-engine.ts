@@ -21,6 +21,7 @@ import {
   type RefinePromptOptions,
 } from '@bun/ai/refinement/index';
 import { remixLyrics as remixLyricsImpl, remixTitle as remixTitleImpl } from '@bun/ai/remix';
+import { generateLyricsExtension } from '@bun/ai/lyrics-extension';
 import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deterministic';
 import { generateDeterministicTitle } from '@bun/prompt/title';
 
@@ -55,6 +56,11 @@ export class AIEngine {
   initialize = this.proxies.initialize;
   isDebugMode = this.proxies.isDebugMode;
   setOpenaiBaseUrl = this.proxies.setOpenaiBaseUrl;
+
+  getProvider = this.config.getProvider.bind(this.config);
+  getModelName = this.config.getModelName.bind(this.config);
+  getOpenaiBaseUrl = this.config.getOpenaiBaseUrl.bind(this.config);
+  isLLMAvailable = this.config.isLLMAvailable.bind(this.config);
 
   // ==========================================================================
   // Core Generation & Refinement
@@ -117,6 +123,21 @@ export class AIEngine {
       false,
       ''
     );
+  }
+
+  async extendLyrics(
+    currentLyrics: string,
+    currentPrompt: string,
+    traceRuntime?: { readonly trace?: TraceCollector }
+  ): Promise<Awaited<ReturnType<typeof generateLyricsExtension>>> {
+    return generateLyricsExtension({
+      currentLyrics,
+      genre: extractGenreFromPrompt(currentPrompt),
+      mood: extractMoodFromPrompt(currentPrompt),
+      getModel: this.proxies.getModel,
+      useSunoTags: this.config.getUseSunoTags(),
+      trace: traceRuntime?.trace,
+    });
   }
 
   // ==========================================================================

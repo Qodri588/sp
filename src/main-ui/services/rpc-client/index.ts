@@ -27,6 +27,8 @@ import type {
   RemixInstrumentsResponse,
   RemixLyricsParams,
   RemixLyricsResponse,
+  ExtendLyricsParams,
+  ExtendLyricsResponse,
   RemixMoodParams,
   RemixMoodResponse,
   RemixRecordingParams,
@@ -89,6 +91,8 @@ export const rpcClient = {
     request('remixTitle', params),
   remixLyrics: (params: RemixLyricsParams): Promise<Result<RemixLyricsResponse, RpcError>> =>
     request('remixLyrics', params),
+  extendLyrics: (params: ExtendLyricsParams): Promise<Result<ExtendLyricsResponse, RpcError>> =>
+    request('extendLyrics', params),
 
   getApiKey: (params: EmptyParams): Promise<Result<{ apiKey: string | null }, RpcError>> =>
     request('getApiKey', params),
@@ -156,5 +160,4 @@ export const rpcClient = {
     params: RefineCreativeBoostParams
   ): Promise<Result<RefineCreativeBoostResponse, RpcError>> =>
     request('refineCreativeBoost', params),
-
 };

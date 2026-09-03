@@ -18,6 +18,7 @@ export interface RemixActions {
   handleRemixRecording: () => Promise<void>;
   handleRemixTitle: () => Promise<void>;
   handleRemixLyrics: () => Promise<void>;
+  handleExtendLyrics: () => Promise<void>;
 }
 
 // eslint-disable-next-line max-lines-per-function
@@ -138,9 +139,37 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
         });
         return unwrapOrThrowResult(result);
       },
-      (r) => ({ currentLyrics: r.lyrics }),
+      (r) => ({
+        currentLyrics: r.lyrics,
+        lyricsExtension: undefined,
+        lyricsExtensionPlacement: undefined,
+        lyricsExtensions: undefined,
+      }),
       'lyrics remix',
       'Lyrics remixed.'
+    );
+  }, [currentSession, deps]);
+
+  const handleExtendLyrics = useCallback(async () => {
+    if (!currentSession?.currentPrompt || !currentSession.currentLyrics) return;
+    const { currentPrompt, currentLyrics } = currentSession;
+    await executeSingleFieldRemix(
+      deps,
+      'extendLyrics',
+      async () => {
+        const result = await rpcClient.extendLyrics({
+          currentPrompt,
+          currentLyrics,
+        });
+        return unwrapOrThrowResult(result);
+      },
+      (r) => ({
+        lyricsExtension: undefined,
+        lyricsExtensionPlacement: undefined,
+        lyricsExtensions: r.extensions,
+      }),
+      'lyrics extension',
+      'Lyrics extension added.'
     );
   }, [currentSession, deps]);
 
@@ -152,5 +181,6 @@ export function useRemixActions(deps: RemixExecutorDeps): RemixActions {
     handleRemixRecording,
     handleRemixTitle,
     handleRemixLyrics,
+    handleExtendLyrics,
   };
 }

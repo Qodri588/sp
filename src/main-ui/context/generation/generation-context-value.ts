@@ -62,6 +62,7 @@ export function useGenerationContextValue({
       handleRemixRecording: remixActions.handleRemixRecording,
       handleRemixTitle: remixActions.handleRemixTitle,
       handleRemixLyrics: remixActions.handleRemixLyrics,
+      handleExtendLyrics: remixActions.handleExtendLyrics,
       handleGenerateQuickVibes: quickVibesActions.handleGenerateQuickVibes,
       handleRemixQuickVibes: quickVibesActions.handleRemixQuickVibes,
       handleRefineQuickVibes: quickVibesActions.handleRefineQuickVibes,

@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import { OutputSection } from '@/components/prompt-editor/output-section';
 import { OutputSkeleton } from '@/components/prompt-editor/output-skeleton';
 import { PromptOutput } from '@/components/prompt-output';
@@ -7,9 +9,10 @@ import { SunoNativeOutput } from '@/components/suno-native-output';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { SectionLabel } from '@/components/ui/section-label';
+import { injectLyricsExtension, injectLyricsExtensions } from '@shared/lyrics-extension';
 
 import type { GeneratingAction } from '@/context/generation';
-import type { TraceRun } from '@shared/types';
+import type { LyricsExtensionBlock, LyricsExtensionPlacement, TraceRun } from '@shared/types';
 import type { ReactElement } from 'react';
 
 interface OutputPanelProps {
@@ -17,6 +20,9 @@ interface OutputPanelProps {
   currentPrompt: string;
   currentTitle?: string;
   currentLyrics?: string;
+  lyricsExtension?: string;
+  lyricsExtensionPlacement?: LyricsExtensionPlacement;
+  lyricsExtensions?: LyricsExtensionBlock[];
   generatingAction: GeneratingAction;
   storyMode: boolean;
   promptOverLimit: boolean;
@@ -28,6 +34,7 @@ interface OutputPanelProps {
   onRemixQuickVibes: () => void;
   onRemixTitle: () => void;
   onRemixLyrics: () => void;
+  onExtendLyrics: () => void;
   onRemixGenre: () => void;
   onRemixMood: () => void;
   onRemixInstruments: () => void;
@@ -37,11 +44,15 @@ interface OutputPanelProps {
   onDebugOpen: () => void;
 }
 
+// eslint-disable-next-line complexity, max-lines-per-function
 export function OutputPanel({
   promptMode,
   currentPrompt,
   currentTitle,
   currentLyrics,
+  lyricsExtension,
+  lyricsExtensionPlacement,
+  lyricsExtensions,
   generatingAction,
   storyMode,
   promptOverLimit,
@@ -52,6 +63,7 @@ export function OutputPanel({
   onRemixQuickVibes,
   onRemixTitle,
   onRemixLyrics,
+  onExtendLyrics,
   onRemixGenre,
   onRemixMood,
   onRemixInstruments,
@@ -60,6 +72,13 @@ export function OutputPanel({
   onRemix,
   onDebugOpen,
 }: OutputPanelProps): ReactElement | null {
+  const [showLyricsExtension, setShowLyricsExtension] = useState(true);
+  const hasLyricsExtension = (lyricsExtensions?.length ?? 0) > 0 || Boolean(lyricsExtension);
+
+  useEffect(() => {
+    setShowLyricsExtension(hasLyricsExtension);
+  }, [hasLyricsExtension]);
+
   if (showSkeleton && !currentPrompt) return <OutputSkeleton />;
   if (!currentPrompt) return null;
 
@@ -72,6 +91,9 @@ export function OutputPanel({
           prompt={currentPrompt}
           title={currentTitle}
           lyrics={currentLyrics}
+          lyricsExtension={lyricsExtension}
+          lyricsExtensionPlacement={lyricsExtensionPlacement}
+          lyricsExtensions={lyricsExtensions}
           generatingAction={generatingAction}
           storyMode={storyMode}
           hasDebugInfo={hasDebugInfo}
@@ -83,6 +105,7 @@ export function OutputPanel({
           onRemixStyleTags={onRemixStyleTags}
           onRemixRecording={onRemixRecording}
           onRemixLyrics={onRemixLyrics}
+          onExtendLyrics={onExtendLyrics}
         />
         <SunoNativeOutput prompt={currentPrompt} />
       </div>
@@ -133,9 +156,28 @@ export function OutputPanel({
       {currentLyrics && (
         <OutputSection
           label="Lyrics"
-          content={currentLyrics}
+          content={
+            showLyricsExtension && hasLyricsExtension
+              ? lyricsExtensions?.length
+                ? injectLyricsExtensions(currentLyrics, lyricsExtensions)
+                : lyricsExtensionPlacement
+                  ? injectLyricsExtension(
+                      currentLyrics,
+                      lyricsExtension ?? '',
+                      lyricsExtensionPlacement
+                    )
+                  : `${currentLyrics}\n\n${lyricsExtension ?? ''}`
+              : currentLyrics
+          }
           onRemix={onRemixLyrics}
           isRemixing={generatingAction === 'remixLyrics'}
+          onInjectExtend={onExtendLyrics}
+          isInjectingExtend={generatingAction === 'extendLyrics'}
+          hasExtend={hasLyricsExtension}
+          showExtend={showLyricsExtension}
+          onToggleExtend={() => {
+            setShowLyricsExtension((visible) => !visible);
+          }}
           scrollable
         />
       )}

@@ -145,6 +145,16 @@ export interface RemixLyricsResponse {
   lyrics: string;
 }
 
+export interface ExtendLyricsParams {
+  currentPrompt: string;
+  currentLyrics: string;
+}
+export interface ExtendLyricsResponse {
+  extendText: string;
+  placement: import('./domain').LyricsExtensionPlacement;
+  extensions: import('./domain').LyricsExtensionBlock[];
+}
+
 // Settings endpoints
 export interface SetDebugModeParams {
   debugMode: boolean;
@@ -169,6 +179,8 @@ export interface GetAllSettingsResponse {
   apiKeys: APIKeys;
   model: string;
   openaiBaseUrl?: string | null;
+  llmAvailable?: boolean;
+  aiSettingsFromEnv?: boolean;
   useSunoTags: boolean;
   debugMode: boolean;
   maxMode: boolean;

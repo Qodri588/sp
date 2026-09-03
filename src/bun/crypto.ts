@@ -38,8 +38,19 @@ function createRandomSecret(): string {
   return Buffer.from(bytes).toString('base64');
 }
 
+function getConfiguredSecret(): string | null {
+  const secret = process.env.SUNO_STORAGE_SECRET ?? Bun.env.SUNO_STORAGE_SECRET;
+  return secret?.trim() || null;
+}
+
 async function loadOrCreateSecret(operation: 'encrypt' | 'decrypt'): Promise<string> {
   if (cachedSecret) return cachedSecret;
+  const configuredSecret = getConfiguredSecret();
+  if (configuredSecret) {
+    cachedSecret = configuredSecret;
+    return configuredSecret;
+  }
+
   const allowInsecureFallback = isTestOrCI();
   if (secretsStoreUnavailable) {
     if (!allowInsecureFallback) {

@@ -191,7 +191,8 @@ export async function refineLyricsOnly(
       {
         trace: runtime?.trace,
         traceLabel: 'lyrics.bootstrap',
-      }
+      },
+      feedback
     );
 
     log.info('refineLyricsOnly:bootstrap:complete', {
@@ -307,7 +308,8 @@ export async function refineWithDeterministicStyle(
       {
         trace: runtime?.trace,
         traceLabel: 'lyrics.bootstrap',
-      }
+      },
+      feedback
     );
 
     return {
@@ -361,7 +363,8 @@ export async function refinePromptDirectMode(
         {
           trace: runtime?.trace,
           traceLabel: 'lyrics.bootstrap',
-        }
+        },
+        feedback
       )
     : null;
 

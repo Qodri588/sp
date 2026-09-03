@@ -1,4 +1,5 @@
 import { type AIEngine } from '@bun/ai';
+import { DEFAULT_API_KEYS } from '@shared/types';
 import { type StorageManager } from '@bun/storage';
 import { APP_CONSTANTS } from '@shared/constants';
 import {
@@ -40,17 +41,20 @@ type SettingsHandlers = Pick<
 
 function createCoreHandlers(
   aiEngine: AIEngine,
-  storage: StorageManager
+  storage: StorageManager,
+  aiSettingsFromEnv: boolean
 ): Pick<SettingsHandlers, 'getApiKey' | 'setApiKey' | 'getModel' | 'setModel'> {
   return {
     getApiKey: async () => {
       log.info('getApiKey');
+      if (aiSettingsFromEnv) return { apiKey: null };
       const config = await storage.getConfig();
       return { apiKey: config.apiKeys[config.provider] };
     },
     setApiKey: async (params) => {
       const { apiKey } = validate(SetApiKeySchema, params);
       log.info('setApiKey');
+      if (aiSettingsFromEnv) return { success: true };
       const config = await storage.getConfig();
       await storage.saveConfig({ apiKeys: { ...config.apiKeys, [config.provider]: apiKey } });
       aiEngine.setApiKey(config.provider, apiKey);
@@ -58,12 +62,14 @@ function createCoreHandlers(
     },
     getModel: async () => {
       log.info('getModel');
+      if (aiSettingsFromEnv) return { model: aiEngine.getModelName() };
       const config = await storage.getConfig();
       return { model: config.model };
     },
     setModel: async (params) => {
       const { model } = validate(SetModelSchema, params);
       log.info('setModel', { model });
+      if (aiSettingsFromEnv) return { success: true };
       await storage.saveConfig({ model });
       aiEngine.setModel(model);
       return { success: true };
@@ -149,21 +155,26 @@ function createPromptModeHandlers(
 
 function createBulkHandlers(
   aiEngine: AIEngine,
-  storage: StorageManager
+  storage: StorageManager,
+  aiSettingsFromEnv: boolean
 ): Pick<SettingsHandlers, 'getAllSettings' | 'saveAllSettings'> {
   return {
     getAllSettings: async () => {
       const config = await storage.getConfig();
       return {
-        provider: config.provider,
-        apiKeys: config.apiKeys,
-        model: config.model,
+        provider: aiSettingsFromEnv ? aiEngine.getProvider() : config.provider,
+        // AI credentials come from the backend .env file and are never sent
+        // back to the browser.
+        apiKeys: aiSettingsFromEnv ? { ...DEFAULT_API_KEYS } : config.apiKeys,
+        model: aiSettingsFromEnv ? aiEngine.getModelName() : config.model,
+        openaiBaseUrl: aiSettingsFromEnv ? aiEngine.getOpenaiBaseUrl() : config.openaiBaseUrl,
+        ...(aiSettingsFromEnv ? { llmAvailable: aiEngine.isLLMAvailable() } : {}),
+        ...(aiSettingsFromEnv ? { aiSettingsFromEnv: true } : {}),
         useSunoTags: config.useSunoTags,
         debugMode: config.debugMode,
         maxMode: config.maxMode,
         lyricsMode: config.lyricsMode,
         storyMode: config.storyMode,
-        openaiBaseUrl: config.openaiBaseUrl ?? null,
         promptMode: config.promptMode,
         creativeBoostMode: config.creativeBoostMode,
       };
@@ -187,10 +198,14 @@ function createBulkHandlers(
         'saveAllSettings',
         async () => {
           await storage.saveConfig({
-            provider,
-            apiKeys,
-            model,
-            openaiBaseUrl: openaiBaseUrl ?? null,
+            ...(aiSettingsFromEnv
+              ? {}
+              : {
+                  provider,
+                  apiKeys,
+                  model,
+                  openaiBaseUrl: openaiBaseUrl ?? null,
+                }),
             useSunoTags,
             debugMode,
             maxMode,
@@ -200,14 +215,17 @@ function createBulkHandlers(
             ...(creativeBoostMode !== undefined ? { creativeBoostMode } : {}),
           });
 
-          aiEngine.setProvider(provider);
-          for (const p of APP_CONSTANTS.AI.PROVIDER_IDS) {
-            aiEngine.setApiKey(p, apiKeys[p]);
+          if (!aiSettingsFromEnv) {
+            aiEngine.setProvider(provider);
+            for (const p of APP_CONSTANTS.AI.PROVIDER_IDS) {
+              aiEngine.setApiKey(p, apiKeys[p]);
+            }
+            aiEngine.setModel(model);
+            if (openaiBaseUrl !== undefined) {
+              aiEngine.setOpenaiBaseUrl(openaiBaseUrl ?? null);
+            }
           }
-          aiEngine.setModel(model);
-          if (openaiBaseUrl !== undefined) {
-            aiEngine.setOpenaiBaseUrl(openaiBaseUrl ?? null);
-          }
+
           aiEngine.setUseSunoTags(useSunoTags);
           aiEngine.setDebugMode(debugMode);
           aiEngine.setMaxMode(maxMode);
@@ -216,7 +234,9 @@ function createBulkHandlers(
 
           return { success: true };
         },
-        { provider }
+        {
+          provider: aiSettingsFromEnv ? aiEngine.getProvider() : provider,
+        }
       );
     },
   };
@@ -224,12 +244,13 @@ function createBulkHandlers(
 
 export function createSettingsHandlers(
   aiEngine: AIEngine,
-  storage: StorageManager
+  storage: StorageManager,
+  aiSettingsFromEnv = false
 ): SettingsHandlers {
   return {
-    ...createCoreHandlers(aiEngine, storage),
+    ...createCoreHandlers(aiEngine, storage, aiSettingsFromEnv),
     ...createModeHandlers(aiEngine, storage),
     ...createPromptModeHandlers(storage),
-    ...createBulkHandlers(aiEngine, storage),
+    ...createBulkHandlers(aiEngine, storage, aiSettingsFromEnv),
   };
 }

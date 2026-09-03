@@ -71,6 +71,9 @@ export interface GenerationResultBase {
   prompt: string;
   title?: string;
   lyrics?: string;
+  lyricsExtension?: string;
+  lyricsExtensionPlacement?: PromptSession['lyricsExtensionPlacement'];
+  lyricsExtensions?: PromptSession['lyricsExtensions'];
   versionId: string;
   debugTrace?: TraceRun;
   /** Flag indicating Story Mode fell back to deterministic output */
@@ -103,6 +106,9 @@ export function createVersion(result: GenerationResultBase, feedback?: string): 
     content: result.prompt,
     title: result.title,
     lyrics: result.lyrics,
+    lyricsExtension: result.lyricsExtension,
+    lyricsExtensionPlacement: result.lyricsExtensionPlacement,
+    lyricsExtensions: result.lyricsExtensions,
     feedback,
     timestamp: new Date().toISOString(),
     debugTrace: result.debugTrace,
@@ -134,6 +140,9 @@ function createOrUpdateSession(
         currentPrompt: result.prompt,
         currentTitle: result.title,
         currentLyrics: result.lyrics,
+        lyricsExtension: result.lyricsExtension,
+        lyricsExtensionPlacement: result.lyricsExtensionPlacement,
+        lyricsExtensions: result.lyricsExtensions,
         versionHistory: [newVersion],
         createdAt: now,
         updatedAt: now,
@@ -145,6 +154,14 @@ function createOrUpdateSession(
         currentPrompt: result.prompt,
         currentTitle: result.title,
         currentLyrics: result.lyrics,
+        lyricsExtension:
+          result.lyrics !== undefined ? result.lyricsExtension : currentSession.lyricsExtension,
+        lyricsExtensionPlacement:
+          result.lyrics !== undefined
+            ? result.lyricsExtensionPlacement
+            : currentSession.lyricsExtensionPlacement,
+        lyricsExtensions:
+          result.lyrics !== undefined ? result.lyricsExtensions : currentSession.lyricsExtensions,
         versionHistory: [...currentSession.versionHistory, newVersion],
         updatedAt: now,
         promptMode,

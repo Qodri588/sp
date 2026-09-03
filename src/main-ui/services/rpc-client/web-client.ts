@@ -7,13 +7,22 @@ import type { Result } from '@shared/types/result';
 
 const API_BASE = '/api';
 
-export async function request<M extends string>(
-  method: M,
-  params: Record<string, never> | Record<string, unknown>
-): Promise<Result<any, RpcError>> {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function isResultEnvelope(
+  value: unknown
+): value is { ok: boolean; value?: unknown; error?: unknown } {
+  return isRecord(value) && typeof value.ok === 'boolean';
+}
+
+export async function request<T>(method: string, params: unknown): Promise<Result<T, RpcError>> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), APP_CONSTANTS.AI.TIMEOUT_MS);
+    const timeout = setTimeout(() => {
+      controller.abort();
+    }, APP_CONSTANTS.AI.TIMEOUT_MS);
 
     const response = await fetch(`${API_BASE}/${method}`, {
       method: 'POST',
@@ -25,16 +34,20 @@ export async function request<M extends string>(
     clearTimeout(timeout);
 
     if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      return Err(
-        mapToRpcError(
-          { code: response.status, message: body.message ?? response.statusText },
-          { method },
-        ),
-      );
+      const body: unknown = await response.json().catch(() => ({}));
+      const message =
+        body && typeof body === 'object' && 'message' in body && typeof body.message === 'string'
+          ? body.message
+          : response.statusText;
+      return Err(mapToRpcError({ code: response.status, message }, { method }));
     }
 
-    return Ok(await response.json());
+    const body: unknown = await response.json();
+    if (isResultEnvelope(body)) {
+      if (body.ok) return Ok(body.value as T);
+      return Err(mapToRpcError(body.error, { method }));
+    }
+    return Ok(body as T);
   } catch (error) {
     return Err(mapToRpcError(error, { method }));
   }

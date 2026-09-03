@@ -10,6 +10,14 @@ import { PromptModeSchema } from './settings';
 import { TraceRunSchema } from './trace';
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const LyricsExtensionPlacementSchema = z.object({
+  insertAfter: z.string().min(1),
+  occurrence: z.number().int().positive(),
+});
+const LyricsExtensionBlockSchema = z.object({
+  extendText: z.string(),
+  placement: LyricsExtensionPlacementSchema,
+});
 
 export const DeleteSessionSchema = z.object({
   id: z.string().regex(UUID_PATTERN, 'Session ID must be a valid UUID'),
@@ -20,6 +28,9 @@ export const PromptVersionSchema = z.object({
   content: z.string(),
   title: z.string().optional(),
   lyrics: z.string().optional(),
+  lyricsExtension: z.string().optional(),
+  lyricsExtensionPlacement: LyricsExtensionPlacementSchema.optional(),
+  lyricsExtensions: z.array(LyricsExtensionBlockSchema).optional(),
   feedback: z.string().optional(),
   lockedPhrase: z.string().optional(),
   timestamp: z.string(),
@@ -56,6 +67,9 @@ export const SaveSessionSchema = z.object({
     currentPrompt: z.string(),
     currentTitle: z.string().optional(),
     currentLyrics: z.string().optional(),
+    lyricsExtension: z.string().optional(),
+    lyricsExtensionPlacement: LyricsExtensionPlacementSchema.optional(),
+    lyricsExtensions: z.array(LyricsExtensionBlockSchema).optional(),
     versionHistory: z.array(PromptVersionSchema),
     createdAt: z.string(),
     updatedAt: z.string(),

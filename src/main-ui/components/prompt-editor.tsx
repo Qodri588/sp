@@ -31,7 +31,14 @@ export function PromptEditor({
   handlers,
   config,
 }: PromptEditorProps): ReactElement {
-  const { currentPrompt, currentTitle, currentLyrics } = output;
+  const {
+    currentPrompt,
+    currentTitle,
+    currentLyrics,
+    lyricsExtension,
+    lyricsExtensionPlacement,
+    lyricsExtensions,
+  } = output;
   const { pendingInput, lockedPhrase, lyricsTopic, advancedSelection, computedMusicPhrase } = input;
   const {
     isGenerating,
@@ -67,8 +74,10 @@ export function PromptEditor({
 
   const isAdvancedModeActive = editorMode === 'advanced' && hasAdvancedSelection(advancedSelection);
 
+  // Keep the editor usable while AI is being configured. Individual submit
+  // actions still use isLLMAvailable to prevent requests the backend cannot run.
   return (
-    <GenerationDisabledProvider isDisabled={isGenerating || !isLLMAvailable}>
+    <GenerationDisabledProvider isDisabled={isGenerating}>
       <section className="flex-1 flex flex-col bg-background min-h-0 overflow-hidden">
         <div className="flex-1 flex flex-col p-6 pb-[var(--space-8)] gap-6 max-w-6xl mx-auto w-full overflow-auto">
           <OutputPanel
@@ -76,6 +85,9 @@ export function PromptEditor({
             currentPrompt={currentPrompt}
             currentTitle={currentTitle}
             currentLyrics={currentLyrics}
+            lyricsExtension={lyricsExtension}
+            lyricsExtensionPlacement={lyricsExtensionPlacement}
+            lyricsExtensions={lyricsExtensions}
             generatingAction={generatingAction}
             storyMode={storyMode}
             promptOverLimit={promptOverLimit}
@@ -86,6 +98,7 @@ export function PromptEditor({
             onRemixQuickVibes={remix.onRemixQuickVibes}
             onRemixTitle={remix.onRemixTitle}
             onRemixLyrics={remix.onRemixLyrics}
+            onExtendLyrics={remix.onExtendLyrics}
             onRemixGenre={remix.onRemixGenre}
             onRemixMood={remix.onRemixMood}
             onRemixInstruments={remix.onRemixInstruments}

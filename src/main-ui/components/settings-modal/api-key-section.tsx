@@ -17,6 +17,7 @@ interface ApiKeySectionProps {
   openaiBaseUrl: string;
   showKey: boolean;
   loading: boolean;
+  aiSettingsFromEnv: boolean;
   error: string | null;
   onProviderChange: (provider: AIProvider) => void;
   onApiKeyChange: (value: string) => void;
@@ -24,12 +25,14 @@ interface ApiKeySectionProps {
   onToggleShowKey: () => void;
 }
 
+// eslint-disable-next-line max-lines-per-function
 export function ApiKeySection({
   provider,
   apiKeys,
   openaiBaseUrl,
   showKey,
   loading,
+  aiSettingsFromEnv,
   error,
   onProviderChange,
   onApiKeyChange,
@@ -49,7 +52,7 @@ export function ApiKeySection({
           onChange={(e) => {
             onProviderChange(e.target.value as AIProvider);
           }}
-          disabled={loading}
+          disabled={loading || aiSettingsFromEnv}
           className={selectClassName}
         >
           {PROVIDERS.map((p) => (
@@ -67,6 +70,7 @@ export function ApiKeySection({
           <Input
             type="text"
             value={openaiBaseUrl}
+            disabled={aiSettingsFromEnv}
             onChange={(e) => {
               onOpenaiBaseUrlChange(e.target.value);
             }}
@@ -74,8 +78,8 @@ export function ApiKeySection({
             className="bg-input"
           />
           <p className="ui-helper">
-            Leave empty to use the official OpenAI API. Set this to any OpenAI-compatible
-            endpoint (e.g. 9router, DeepSeek, Kimi).
+            Leave empty to use the official OpenAI API. Set this to any OpenAI-compatible endpoint
+            (e.g. 9router, DeepSeek, Kimi).
           </p>
         </div>
       )}
@@ -86,6 +90,7 @@ export function ApiKeySection({
           <Input
             type={showKey ? 'text' : 'password'}
             value={currentApiKey}
+            disabled={loading || aiSettingsFromEnv}
             onChange={(e) => {
               onApiKeyChange(e.target.value);
             }}
@@ -94,13 +99,18 @@ export function ApiKeySection({
           />
           <button
             type="button"
+            disabled={loading || aiSettingsFromEnv}
             onClick={onToggleShowKey}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
           >
             {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
-        {!showBaseUrl && (
+        {aiSettingsFromEnv ? (
+          <p className="ui-helper text-emerald-500">
+            AI provider, endpoint, and API key are loaded securely from the server&apos;s .env file.
+          </p>
+        ) : !showBaseUrl ? (
           <p className="ui-helper">
             Get your key from{' '}
             <a
@@ -112,8 +122,8 @@ export function ApiKeySection({
               {currentProvider.keyUrl.replace('https://', '')}
             </a>
           </p>
-        )}
-        {!currentApiKey && !loading && (
+        ) : null}
+        {!aiSettingsFromEnv && !currentApiKey && !loading && (
           <p className="ui-helper text-amber-500">
             No API key configured for {currentProvider.name}. Generation will fail.
           </p>

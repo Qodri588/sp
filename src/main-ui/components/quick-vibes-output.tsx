@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import { OutputSection } from '@/components/prompt-editor/output-section';
 import { PromptOutput } from '@/components/prompt-output';
 import { RemixButtonGroup } from '@/components/remix-button-group';
@@ -5,15 +7,20 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { SectionLabel } from '@/components/ui/section-label';
 import { APP_CONSTANTS } from '@shared/constants';
+import { injectLyricsExtension, injectLyricsExtensions } from '@shared/lyrics-extension';
 import { stripMaxModeHeader } from '@shared/prompt-utils';
 
 import type { GeneratingAction } from '@/context/generation';
 import type { ReactElement } from 'react';
+import type { LyricsExtensionBlock, LyricsExtensionPlacement } from '@shared/types';
 
 interface QuickVibesOutputProps {
   prompt: string;
   title?: string;
   lyrics?: string;
+  lyricsExtension?: string;
+  lyricsExtensionPlacement?: LyricsExtensionPlacement;
+  lyricsExtensions?: LyricsExtensionBlock[];
   generatingAction: GeneratingAction;
   storyMode: boolean;
   hasDebugInfo: boolean;
@@ -25,12 +32,16 @@ interface QuickVibesOutputProps {
   onRemixStyleTags: () => void;
   onRemixRecording: () => void;
   onRemixLyrics?: () => void;
+  onExtendLyrics?: () => void;
 }
 
 export function QuickVibesOutput({
   prompt,
   title,
   lyrics,
+  lyricsExtension,
+  lyricsExtensionPlacement,
+  lyricsExtensions,
   generatingAction,
   storyMode,
   hasDebugInfo,
@@ -42,7 +53,15 @@ export function QuickVibesOutput({
   onRemixStyleTags,
   onRemixRecording,
   onRemixLyrics,
+  onExtendLyrics,
 }: QuickVibesOutputProps): ReactElement {
+  const [showLyricsExtension, setShowLyricsExtension] = useState(true);
+  const hasLyricsExtension = (lyricsExtensions?.length ?? 0) > 0 || Boolean(lyricsExtension);
+
+  useEffect(() => {
+    setShowLyricsExtension(hasLyricsExtension);
+  }, [hasLyricsExtension]);
+
   const contentOnly = stripMaxModeHeader(prompt);
   const charCount = contentOnly.length;
   const isOverLimit = charCount > APP_CONSTANTS.QUICK_VIBES_MAX_CHARS;
@@ -85,9 +104,24 @@ export function QuickVibesOutput({
       {lyrics && (
         <OutputSection
           label="Lyrics"
-          content={lyrics}
+          content={
+            showLyricsExtension && hasLyricsExtension
+              ? lyricsExtensions?.length
+                ? injectLyricsExtensions(lyrics, lyricsExtensions)
+                : lyricsExtensionPlacement
+                  ? injectLyricsExtension(lyrics, lyricsExtension ?? '', lyricsExtensionPlacement)
+                  : `${lyrics}\n\n${lyricsExtension ?? ''}`
+              : lyrics
+          }
           onRemix={onRemixLyrics}
           isRemixing={generatingAction === 'remixLyrics'}
+          onInjectExtend={onExtendLyrics}
+          isInjectingExtend={generatingAction === 'extendLyrics'}
+          hasExtend={hasLyricsExtension}
+          showExtend={showLyricsExtension}
+          onToggleExtend={() => {
+            setShowLyricsExtension((visible) => !visible);
+          }}
           scrollable
         />
       )}
