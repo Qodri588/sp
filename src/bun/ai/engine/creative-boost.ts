@@ -24,6 +24,7 @@ function buildCreativeBoostConfig(generationConfig: GenerationConfig): CreativeB
     isLLMAvailable: generationConfig.isLLMAvailable,
     isStoryMode: generationConfig.isStoryMode,
     getUseSunoTags: generationConfig.getUseSunoTags,
+    getLyricsPromptSettings: generationConfig.getLyricsPromptSettings,
   };
 }
 
@@ -54,8 +55,6 @@ export function createCreativeBoostMethods(factories: ConfigFactories): {
     runtime?: { readonly trace?: TraceCollector; readonly rng?: () => number }
   ) => Promise<GenerationResult>;
 } {
-  const boostConfig = buildCreativeBoostConfig(factories.getGenerationConfig());
-
   return {
     async generateCreativeBoost(
       creativityLevel,
@@ -67,6 +66,11 @@ export function createCreativeBoostMethods(factories: ConfigFactories): {
       withLyrics,
       runtime
     ) {
+      // Build this at call time. AIEngine is constructed before persisted
+      // settings are initialized, so capturing it here would freeze the
+      // Intro/Outro and custom lyrics settings at their defaults.
+      const boostConfig = buildCreativeBoostConfig(factories.getGenerationConfig());
+
       return generateCreativeBoostImpl(
         {
           creativityLevel,
@@ -96,6 +100,10 @@ export function createCreativeBoostMethods(factories: ConfigFactories): {
       targetGenreCount,
       runtime
     ) {
+      // Refresh the request snapshot for every refinement for the same reason
+      // as generation: settings can be changed through the Settings UI.
+      const boostConfig = buildCreativeBoostConfig(factories.getGenerationConfig());
+
       return refineCreativeBoostImpl(
         {
           currentPrompt,

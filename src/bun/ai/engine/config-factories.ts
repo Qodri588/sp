@@ -6,7 +6,10 @@ import { postProcess } from '@bun/ai/utils';
 import type { ConfigProxies } from './config-proxies';
 import type { GenerationConfig, RefinementConfig } from '@bun/ai/types';
 
-function createPostProcess(_config: AIConfig, getModel: () => LanguageModel): (text: string) => Promise<string> {
+function createPostProcess(
+  _config: AIConfig,
+  getModel: () => LanguageModel
+): (text: string) => Promise<string> {
   return async (text: string): Promise<string> => {
     return postProcess(text, getModel);
   };
@@ -35,6 +38,7 @@ export function createConfigFactories(
       getUseSunoTags: requestConfig.getUseSunoTags,
       getModelName: requestConfig.getModelName,
       getProvider: requestConfig.getProvider,
+      getLyricsPromptSettings: requestConfig.getLyricsPromptSettings,
       isUseLocalLLM: () => false,
       getOllamaEndpoint: () => undefined,
       getOllamaEndpointIfLocal: () => undefined,

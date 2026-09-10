@@ -1,8 +1,15 @@
 import { runAIRequest } from '@bun/ai/request-runner';
 import { cleanLyrics } from '@bun/ai/utils';
 import { createLogger } from '@shared/logger';
+import {
+  DEFAULT_LYRICS_PROMPT_SETTINGS,
+  fillLyricsPromptTemplate,
+  hasDisabledLyricsSections,
+  normalizeLyricsPromptSettings,
+} from '@shared/lyrics-settings';
 
 import type { TraceCollector } from '@bun/trace';
+import type { LyricsPromptSettings } from '@shared/types';
 import type { LyricsExtensionBlock, LyricsExtensionPlacement } from '@shared/types/domain';
 import type { LanguageModel } from 'ai';
 
@@ -151,6 +158,7 @@ function hasEnoughExtensionBlocks(lyrics: string, extensions: LyricsExtensionBlo
  * Generate an optional extension block for already-generated lyrics.
  * The original lyrics are context only; the model returns the new block.
  */
+// eslint-disable-next-line max-lines-per-function
 export async function generateLyricsExtension(options: {
   currentLyrics: string;
   genre: string;
@@ -159,8 +167,31 @@ export async function generateLyricsExtension(options: {
   useSunoTags?: boolean;
   timeoutMs?: number;
   trace?: TraceCollector;
+  promptSettings?: Partial<LyricsPromptSettings>;
 }): Promise<LyricsExtensionResult> {
-  const { currentLyrics, genre, mood, getModel, useSunoTags = false, timeoutMs, trace } = options;
+  const {
+    currentLyrics,
+    genre,
+    mood,
+    getModel,
+    useSunoTags = false,
+    timeoutMs,
+    trace,
+    promptSettings = DEFAULT_LYRICS_PROMPT_SETTINGS,
+  } = options;
+  const settings = normalizeLyricsPromptSettings(promptSettings);
+  const customPrompt = fillLyricsPromptTemplate(settings.lyricsExtensionPrompt, {
+    topic: 'the existing lyrics',
+    genre,
+    mood,
+    bannedWords: settings.bannedLyricsWords.join(', '),
+  });
+  const structurePreference = [
+    settings.includeLyricsIntro ? null : 'Do not create an [INTRO] section.',
+    settings.includeLyricsOutro ? null : 'Do not create an [OUTRO] section.',
+  ]
+    .filter((rule): rule is string => Boolean(rule))
+    .join(' ');
   const systemPrompt = `You are a professional songwriter injecting a focused extension into existing lyrics.
 
 TASK:
@@ -175,6 +206,9 @@ TASK:
 - Keep each lyric line short, concrete, and connected to the existing story.
 - Do not rewrite or repeat the existing lyrics inside extendText.
 - Do not include markdown fences, explanations, titles, labels, internal delimiters, or ///*****///.
+${settings.bannedLyricsWords.length > 0 ? `- Never use these user-banned words: ${settings.bannedLyricsWords.join(', ')}.\n` : ''}${structurePreference ? `- ${structurePreference}\n` : ''}
+USER-CONFIGURED EXTENSION INSTRUCTIONS (MANDATORY):
+${customPrompt}
 
 GENRE: ${genre}
 MOOD: ${mood}
@@ -206,7 +240,9 @@ Choose several natural insertion points anywhere in the song and return the JSON
       !hasEnoughExtensionBlocks(currentLyrics, parsed.extensions) ||
       parsed.extensions.some(
         ({ extendText, placement }) =>
-          !isValidLyricsExtension(extendText) || !isValidPlacement(currentLyrics, placement)
+          !isValidLyricsExtension(extendText) ||
+          hasDisabledLyricsSections(extendText, settings) ||
+          !isValidPlacement(currentLyrics, placement)
       )
     ) {
       return null;

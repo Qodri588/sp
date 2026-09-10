@@ -117,7 +117,8 @@ export async function generateWithLyrics(
       getModelFn,
       config.getUseSunoTags(),
       undefined,
-      { trace, traceLabel: 'lyrics.generate' }
+      { trace, traceLabel: 'lyrics.generate' },
+      config.getLyricsPromptSettings?.()
     ),
   ]);
   const title = cleanTitle(titleResult.title);

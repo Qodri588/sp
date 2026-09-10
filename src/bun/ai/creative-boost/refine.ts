@@ -27,6 +27,8 @@ import { buildPerformanceGuidance } from '@bun/prompt/genre-parser';
 import { traceDecision } from '@bun/trace';
 import { getErrorMessage } from '@shared/errors';
 import { stripMaxModeHeader } from '@shared/prompt-utils';
+import { hasDisabledLyricsSections } from '@shared/lyrics-settings';
+import { enforceLyricsSectionSettings } from '@bun/ai/lyrics-policy';
 
 import {
   DEFAULT_LYRICS_TOPIC,
@@ -104,7 +106,8 @@ async function generateLyricsForDirectMode(
   feedback: string,
   getModel: () => LanguageModel,
   useSunoTags: boolean,
-  ollamaEndpoint?: string
+  ollamaEndpoint?: string,
+  promptSettings?: import('@shared/types').LyricsPromptSettings
 ): Promise<string | undefined> {
   const topicForLyrics = lyricsTopic?.trim() || description?.trim() || DEFAULT_LYRICS_TOPIC;
   const result = await generateLyricsForCreativeBoost(
@@ -115,7 +118,9 @@ async function generateLyricsForDirectMode(
     true,
     getModel,
     useSunoTags,
-    ollamaEndpoint
+    ollamaEndpoint,
+    undefined,
+    promptSettings
   );
   return result.lyrics;
 }
@@ -157,7 +162,8 @@ async function tryRefineDirectModeLyrics(
       feedback,
       config.getModel,
       config.getUseSunoTags?.() ?? false,
-      config.getOllamaEndpoint?.()
+      config.getOllamaEndpoint?.(),
+      config.getLyricsPromptSettings?.()
     );
   } catch (error: unknown) {
     log.warn('refineDirectMode:lyrics:failed', { error: getErrorMessage(error) });
@@ -275,6 +281,19 @@ async function refineDirectMode(
   // - If lyrics exist, only regenerate/refine when feedback is provided.
   const shouldGenerateLyrics = withLyrics && (!currentLyrics || hasFeedback);
   const lyricsFeedback = hasFeedback ? feedback : '';
+  const preservedLyrics =
+    withLyrics &&
+    currentLyrics &&
+    hasDisabledLyricsSections(currentLyrics, config.getLyricsPromptSettings?.())
+      ? await enforceLyricsSectionSettings({
+          lyrics: currentLyrics,
+          getModel: config.getModel,
+          promptSettings: config.getLyricsPromptSettings?.(),
+          context:
+            'Existing Direct Mode lyrics that must be kept coherent while applying the new section settings:',
+          errorContext: 'repair Creative Boost Direct Mode lyrics section settings',
+        })
+      : currentLyrics;
   const lyrics = shouldGenerateLyrics
     ? await tryRefineDirectModeLyrics(
         enrichedPrompt,
@@ -283,7 +302,7 @@ async function refineDirectMode(
         lyricsFeedback,
         config
       )
-    : currentLyrics;
+    : preservedLyrics;
 
   log.info('refineDirectMode:complete', {
     promptLength: enrichedPrompt.length,

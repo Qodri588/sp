@@ -8,6 +8,8 @@ import { APP_CONSTANTS } from '@shared/constants';
 import { createGenerationRequestConfig } from './core/request-config-factory';
 
 import type { AppConfig, AIProvider, APIKeys } from '@shared/types';
+import { cloneLyricsPromptSettings, DEFAULT_LYRICS_PROMPT_SETTINGS } from '@shared/lyrics-settings';
+import type { LyricsPromptSettings } from '@shared/types';
 import type { GenerationRequestConfig } from './core/request-config';
 import type { LanguageModel } from 'ai';
 
@@ -37,6 +39,9 @@ export class AIConfig {
   private maxMode: boolean = APP_CONSTANTS.AI.DEFAULT_MAX_MODE;
   private lyricsMode: boolean = APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE;
   private storyMode: boolean = APP_CONSTANTS.AI.DEFAULT_STORY_MODE;
+  private lyricsPromptSettings: LyricsPromptSettings = cloneLyricsPromptSettings(
+    DEFAULT_LYRICS_PROMPT_SETTINGS
+  );
   private registry: ProviderRegistry | null = null;
   private openaiBaseUrl: string | null = null;
 
@@ -89,6 +94,10 @@ export class AIConfig {
     this.storyMode = value;
   }
 
+  setLyricsPromptSettings(value: LyricsPromptSettings): void {
+    this.lyricsPromptSettings = cloneLyricsPromptSettings(value);
+  }
+
   setOpenaiBaseUrl(baseUrl: string | null): void {
     this.openaiBaseUrl = baseUrl ? baseUrl.trim() : null;
     this.invalidateRegistry();
@@ -106,6 +115,9 @@ export class AIConfig {
     if (config.maxMode !== undefined) this.maxMode = config.maxMode;
     if (config.lyricsMode !== undefined) this.lyricsMode = config.lyricsMode;
     if (config.storyMode !== undefined) this.storyMode = config.storyMode;
+    if (config.lyricsPromptSettings) {
+      this.setLyricsPromptSettings(config.lyricsPromptSettings);
+    }
 
     if (config.openaiBaseUrl !== undefined) {
       this.openaiBaseUrl = config.openaiBaseUrl ? config.openaiBaseUrl.trim() : null;
@@ -150,6 +162,10 @@ export class AIConfig {
     return this.useSunoTags;
   }
 
+  getLyricsPromptSettings(): LyricsPromptSettings {
+    return cloneLyricsPromptSettings(this.lyricsPromptSettings);
+  }
+
   getRequestConfig(): GenerationRequestConfig {
     return createGenerationRequestConfig(
       {
@@ -161,6 +177,7 @@ export class AIConfig {
         maxMode: this.maxMode,
         lyricsMode: this.lyricsMode,
         storyMode: this.storyMode,
+        lyricsPromptSettings: this.getLyricsPromptSettings(),
         promptMode: APP_CONSTANTS.AI.DEFAULT_PROMPT_MODE,
         creativeBoostMode: 'simple',
       },

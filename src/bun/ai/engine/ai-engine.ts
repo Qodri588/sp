@@ -53,6 +53,7 @@ export class AIEngine {
   setMaxMode = this.proxies.setMaxMode;
   setLyricsMode = this.proxies.setLyricsMode;
   setStoryMode = this.proxies.setStoryMode;
+  setLyricsPromptSettings = this.proxies.setLyricsPromptSettings;
   initialize = this.proxies.initialize;
   isDebugMode = this.proxies.isDebugMode;
   setOpenaiBaseUrl = this.proxies.setOpenaiBaseUrl;
@@ -121,7 +122,10 @@ export class AIEngine {
       this.proxies.getModel,
       this.config.getUseSunoTags(),
       false,
-      ''
+      '',
+      undefined,
+      undefined,
+      this.config.getLyricsPromptSettings()
     );
   }
 
@@ -136,6 +140,7 @@ export class AIEngine {
       mood: extractMoodFromPrompt(currentPrompt),
       getModel: this.proxies.getModel,
       useSunoTags: this.config.getUseSunoTags(),
+      promptSettings: this.config.getLyricsPromptSettings(),
       trace: traceRuntime?.trace,
     });
   }

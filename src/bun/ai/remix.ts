@@ -6,6 +6,7 @@ import { extractGenreFromPrompt, extractMoodFromPrompt } from '@bun/prompt/deter
 import { APP_CONSTANTS } from '@shared/constants';
 
 import type { TraceCollector } from '@bun/trace';
+import type { LyricsPromptSettings } from '@shared/types';
 
 const log = createLogger('Remix');
 
@@ -44,7 +45,8 @@ export async function remixLyrics(
   _isOffline = false,
   _ollamaEndpoint?: string,
   traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string },
-  feedback?: string
+  feedback?: string,
+  promptSettings?: LyricsPromptSettings
 ): Promise<{ lyrics: string }> {
   const genre = extractGenreFromPrompt(currentPrompt);
   const mood = extractMoodFromPrompt(currentPrompt);
@@ -64,7 +66,8 @@ export async function remixLyrics(
     getModel,
     useSunoTags,
     timeoutMs,
-    traceRuntime
+    traceRuntime,
+    promptSettings
   );
   return { lyrics: result.lyrics };
 }

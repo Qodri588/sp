@@ -1,6 +1,7 @@
 import { DEFAULT_API_KEYS, type APIKeys, type AppConfig, type AIProvider } from '@shared/types';
+import { resolve } from 'node:path';
 
-const DEFAULT_AI_ENV_FILE = 'C:\\Users\\Administrator\\Desktop\\spp\\python_app\\.env';
+const LEGACY_AI_ENV_FILE = 'C:\\Users\\Administrator\\Desktop\\spp\\python_app\\.env';
 
 export interface EnvAISettings {
   provider: AIProvider;
@@ -43,13 +44,27 @@ function firstConfigured(values: Record<string, string>, names: string[]): strin
   return names.map((name) => values[name]?.trim()).find(Boolean);
 }
 
-export async function loadAISettingsFromEnv(): Promise<EnvAISettings | null> {
-  const sourcePath =
-    process.env.SUNO_AI_ENV_FILE?.trim() || Bun.env.SUNO_AI_ENV_FILE?.trim() || DEFAULT_AI_ENV_FILE;
-  const file = Bun.file(sourcePath);
-  if (!(await file.exists())) return null;
+function getAIEnvFileCandidates(): string[] {
+  const configuredPath = process.env.SUNO_AI_ENV_FILE?.trim() || Bun.env.SUNO_AI_ENV_FILE?.trim();
+  if (configuredPath) return [configuredPath];
 
-  const values = parseDotEnv(await file.text());
+  return Array.from(new Set([resolve(process.cwd(), '.env'), LEGACY_AI_ENV_FILE]));
+}
+
+export async function loadAISettingsFromEnv(): Promise<EnvAISettings | null> {
+  let sourcePath: string | undefined;
+  let values: Record<string, string> | undefined;
+
+  for (const candidatePath of getAIEnvFileCandidates()) {
+    const file = Bun.file(candidatePath);
+    if (!(await file.exists())) continue;
+    sourcePath = candidatePath;
+    values = parseDotEnv(await file.text());
+    break;
+  }
+
+  if (!sourcePath || !values) return null;
+
   const endpoint = firstConfigured(values, ['ENDPOINT', 'OPENAI_BASE_URL', 'BASE_URL']);
   const model = firstConfigured(values, ['MODEL', 'OPENAI_MODEL']);
   const explicitOpenAIKey = firstConfigured(values, ['OPENAI_API_KEY']);

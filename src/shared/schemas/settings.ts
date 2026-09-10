@@ -20,6 +20,14 @@ export const SetCreativeBoostModeSchema = z.object({
   creativeBoostMode: CreativeBoostModeSchema,
 });
 
+export const LyricsPromptSettingsSchema = z.object({
+  lyricsPrompt: z.string().trim().min(1).max(20_000),
+  lyricsExtensionPrompt: z.string().trim().min(1).max(20_000),
+  bannedLyricsWords: z.array(z.string().trim().min(1).max(100)).max(500),
+  includeLyricsIntro: z.boolean(),
+  includeLyricsOutro: z.boolean(),
+});
+
 export const SaveAllSettingsSchema = z.object({
   provider: ProviderSchema,
   apiKeys: z.object({
@@ -36,6 +44,7 @@ export const SaveAllSettingsSchema = z.object({
   storyMode: z.boolean(),
   promptMode: PromptModeSchema.optional(),
   creativeBoostMode: CreativeBoostModeSchema.optional(),
+  lyricsPromptSettings: LyricsPromptSettingsSchema.optional(),
 });
 
 export type SaveAllSettingsInput = z.infer<typeof SaveAllSettingsSchema>;

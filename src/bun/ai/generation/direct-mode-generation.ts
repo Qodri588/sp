@@ -143,9 +143,13 @@ async function generateDirectModeTitleAndLyrics(
       {
         trace: runtime?.trace,
         traceLabel: 'lyrics.generate',
-      }
+      },
+      config.getLyricsPromptSettings?.()
     ),
   ]);
 
-  return { title, lyrics: cleanLyrics(lyricsResult.lyrics) ?? '' };
+  return {
+    title,
+    lyrics: cleanLyrics(lyricsResult.lyrics) ?? '',
+  };
 }

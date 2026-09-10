@@ -1,4 +1,4 @@
-import type { AIProvider, AppConfig } from '@shared/types';
+import type { AIProvider, AppConfig, LyricsPromptSettings } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 export interface AIRequestConfig {
@@ -9,6 +9,7 @@ export interface AIRequestConfig {
   readonly maxMode: boolean;
   readonly lyricsMode: boolean;
   readonly storyMode: boolean;
+  readonly lyricsPromptSettings: LyricsPromptSettings;
   readonly apiKeys: AppConfig['apiKeys'];
 }
 
@@ -28,4 +29,5 @@ export interface GenerationRequestConfig extends AIRequestConfig {
   readonly isStoryMode: () => boolean;
   readonly isLLMAvailable: () => boolean;
   readonly getUseSunoTags: () => boolean;
+  readonly getLyricsPromptSettings: () => LyricsPromptSettings;
 }

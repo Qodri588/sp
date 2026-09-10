@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import { cleanLyrics, cleanTitle } from '@bun/ai/utils';
+import { hasDisabledLyricsSections } from '@shared/lyrics-settings';
 
 describe('cleanTitle', () => {
   test('removes double quotes from title', () => {
@@ -76,5 +77,32 @@ describe('cleanLyrics', () => {
   test('keeps unquoted first line when it looks like a real lyric line', () => {
     const lyrics = 'A gentle opening line\n[VERSE]\nHello';
     expect(cleanLyrics(lyrics)).toBe(lyrics);
+  });
+
+  test('keeps the AI response intact for later correction', () => {
+    const lyrics = '[INTRO]\nOpening\n[VERSE]\nStory\n[OUTRO]\nClosing';
+    expect(cleanLyrics(lyrics)).toBe(lyrics);
+  });
+});
+
+describe('hasDisabledLyricsSections', () => {
+  const lyrics = '[INTRO]\nOpening lines\n\n[VERSE 1]\nThe story starts\n\n[OUTRO]\nClosing lines';
+
+  test('detects disabled intro and outro sections', () => {
+    expect(
+      hasDisabledLyricsSections(lyrics, {
+        includeLyricsIntro: false,
+        includeLyricsOutro: false,
+      })
+    ).toBe(true);
+  });
+
+  test('preserves sections when intro and outro are enabled', () => {
+    expect(
+      hasDisabledLyricsSections(lyrics, {
+        includeLyricsIntro: true,
+        includeLyricsOutro: true,
+      })
+    ).toBe(false);
   });
 });

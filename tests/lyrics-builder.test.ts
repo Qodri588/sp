@@ -104,6 +104,34 @@ describe('lyrics-builder', () => {
   });
 
   describe('buildLyricsUserPrompt', () => {
+    it('applies editable prompt settings and removes disabled intro/outro sections', () => {
+      const promptSettings = {
+        lyricsPrompt: 'Follow this custom direction for {{topic}} in {{genre}} with {{mood}} mood.',
+        lyricsExtensionPrompt: 'Extend with a fresh scene.',
+        bannedLyricsWords: ['moonlight', 'a forbidden phrase'],
+        includeLyricsIntro: false,
+        includeLyricsOutro: false,
+      };
+      const systemPrompt = buildLyricsSystemPrompt(false, false, promptSettings);
+      const userPrompt = buildLyricsUserPrompt(
+        'a train leaving home',
+        'folk',
+        'wistful',
+        false,
+        false,
+        promptSettings
+      );
+
+      expect(systemPrompt).toContain("Follow this custom direction for the user's topic");
+      expect(systemPrompt).toContain('Do NOT include an [INTRO] section');
+      expect(systemPrompt).toContain('Do NOT include an [OUTRO] section');
+      expect(systemPrompt).toContain('moonlight');
+      expect(systemPrompt).not.toContain('[INTRO]\n<short lines');
+      expect(systemPrompt).not.toContain('[OUTRO]\n<short lines');
+      expect(userPrompt).toContain('Follow this custom direction for a train leaving home');
+      expect(userPrompt).toContain('NEVER use user-banned words: moonlight, a forbidden phrase');
+    });
+
     it('should include description, genre, and mood', () => {
       const prompt = buildLyricsUserPrompt('A song about the ocean', 'ambient', 'peaceful');
       expect(prompt).toContain('A song about the ocean');
@@ -168,7 +196,13 @@ describe('lyrics-builder', () => {
     });
 
     it('includes max mode first-line rule when maxMode is true', () => {
-      const prompt = buildLyricsUserPrompt('A song about the ocean', 'ambient', 'peaceful', false, true);
+      const prompt = buildLyricsUserPrompt(
+        'A song about the ocean',
+        'ambient',
+        'peaceful',
+        false,
+        true
+      );
       expect(prompt).toContain('///*****///');
       expect(prompt).toContain('VERY FIRST LINE');
     });

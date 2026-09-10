@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Lyrics settings panel with editable generation and extension prompts, Intro/Outro toggles, and a user-maintained banned-word list. Supported template variables are `{{topic}}`, `{{genre}}`, `{{mood}}`, and `{{banned_words}}`.
+- Windows `run-web-app.bat` launcher for the Vite UI and Bun API development server.
 - `createHandlerRunner()` utility function to eliminate duplicate handler patterns
 - `formatMaxModePrompt()` shared function to consolidate MAX mode formatting
 - `validateOllamaEndpoint()` function to enforce localhost-only access
@@ -18,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Behavior-test harness using `react-test-renderer` for non-DOM hook/component tests
 
 ### Changed
+- Threaded lyrics settings through storage, RPC validation, AI configuration snapshots, standard generation, Direct Mode, Creative Boost, refinement, remix, and lyric extension flows.
+- Made lyric structure prompts conditional: disabled Intro/Outro sections are removed from the positive output format and explicitly forbidden in every applicable prompt.
+- Added complete-song AI correction instructions so a response that violates section settings is rewritten coherently rather than edited by string slicing.
+- API-key configuration for the web app now comes from the project `.env`; the settings response/UI does not expose the endpoint.
 - Refactored all RPC handlers to use `createHandlerRunner()` pattern
 - Updated Ollama client and availability check to validate endpoints
 - Enhanced SetOllamaSettingsSchema with localhost whitelist validation
@@ -31,10 +37,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - @types/dompurify dev dependency
 
 ### Fixed
+- Fixed Creative Boost generation/refinement capturing default lyric settings before persisted configuration was initialized.
+- Fixed standard Creative Boost refinement dropping the active lyrics settings when generating lyrics.
+- Fixed style-only and Direct Mode refinement paths returning existing lyrics with disabled Intro/Outro sections; affected lyrics are now repaired by AI while preserving the song's story and allowed sections.
+- Fixed lyric extension validation to reject disabled Intro/Outro tags before an extension can be inserted.
 - Intermittent missing macOS Edit menu after launch by restoring controlled reapply behavior
 - Test flake risk from non-awaited `mock.module()` registration in dynamic-import tests
 
 ### Security
+- Prevented the web settings API from returning the AI endpoint while keeping API keys sourced from `.env` on the server side.
 - Added localhost whitelist validation for Ollama endpoints to prevent SSRF attacks
 - Added UUID format validation for session IDs to prevent invalid storage operations
 - Hardened audit policy to fail closed on unexpected `bun audit --json` payload shapes

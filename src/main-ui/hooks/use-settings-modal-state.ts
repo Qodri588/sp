@@ -4,6 +4,10 @@ import { createLogger } from '@shared/logger';
 import { rpcClient, unwrapOrThrowResult } from '@/services/rpc-client';
 import { APP_CONSTANTS } from '@shared/constants';
 import { type AIProvider, type APIKeys, DEFAULT_API_KEYS } from '@shared/types';
+import {
+  DEFAULT_LYRICS_PROMPT_SETTINGS,
+  normalizeLyricsPromptSettings,
+} from '@shared/lyrics-settings';
 
 const log = createLogger('SettingsModalState');
 
@@ -12,12 +16,16 @@ export interface SettingsModalState {
   provider: AIProvider;
   apiKeys: APIKeys;
   model: string;
-  openaiBaseUrl: string;
   useSunoTags: boolean;
   debugMode: boolean;
   maxMode: boolean;
   lyricsMode: boolean;
   storyMode: boolean;
+  lyricsPrompt: string;
+  lyricsExtensionPrompt: string;
+  bannedLyricsWords: string;
+  includeLyricsIntro: boolean;
+  includeLyricsOutro: boolean;
   showKey: boolean;
   saving: boolean;
   loading: boolean;
@@ -30,13 +38,17 @@ export interface SettingsModalActions {
   setProvider: (provider: AIProvider) => void;
   handleProviderChange: (provider: AIProvider) => void;
   handleApiKeyChange: (value: string) => void;
-  setOpenaiBaseUrl: (value: string) => void;
   setModel: (model: string) => void;
   setUseSunoTags: (value: boolean) => void;
   setDebugMode: (value: boolean) => void;
   setMaxMode: (value: boolean) => void;
   setLyricsMode: (value: boolean) => void;
   setStoryMode: (value: boolean) => void;
+  setLyricsPrompt: (value: string) => void;
+  setLyricsExtensionPrompt: (value: string) => void;
+  setBannedLyricsWords: (value: string) => void;
+  setIncludeLyricsIntro: (value: boolean) => void;
+  setIncludeLyricsOutro: (value: boolean) => void;
   setShowKey: (value: boolean) => void;
   toggleShowKey: () => void;
   handleSave: (onClose: () => void) => Promise<void>;
@@ -54,7 +66,6 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
   const [provider, setProvider] = useState<AIProvider>(APP_CONSTANTS.AI.DEFAULT_PROVIDER);
   const [apiKeys, setApiKeys] = useState({ ...DEFAULT_API_KEYS });
   const [model, setModel] = useState('');
-  const [openaiBaseUrl, setOpenaiBaseUrl] = useState('');
   const [useSunoTags, setUseSunoTags] = useState(
     (): boolean => APP_CONSTANTS.AI.DEFAULT_USE_SUNO_TAGS
   );
@@ -62,6 +73,15 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
   const [maxMode, setMaxMode] = useState((): boolean => APP_CONSTANTS.AI.DEFAULT_MAX_MODE);
   const [lyricsMode, setLyricsMode] = useState((): boolean => APP_CONSTANTS.AI.DEFAULT_LYRICS_MODE);
   const [storyMode, setStoryMode] = useState((): boolean => APP_CONSTANTS.AI.DEFAULT_STORY_MODE);
+  const [lyricsPrompt, setLyricsPrompt] = useState(DEFAULT_LYRICS_PROMPT_SETTINGS.lyricsPrompt);
+  const [lyricsExtensionPrompt, setLyricsExtensionPrompt] = useState(
+    DEFAULT_LYRICS_PROMPT_SETTINGS.lyricsExtensionPrompt
+  );
+  const [bannedLyricsWords, setBannedLyricsWords] = useState(
+    DEFAULT_LYRICS_PROMPT_SETTINGS.bannedLyricsWords.join('\n')
+  );
+  const [includeLyricsIntro, setIncludeLyricsIntro] = useState(true);
+  const [includeLyricsOutro, setIncludeLyricsOutro] = useState(true);
   const [showKey, setShowKey] = useState((): boolean => false);
   const [saving, setSaving] = useState((): boolean => false);
   const [loading, setLoading] = useState((): boolean => true);
@@ -83,7 +103,6 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
         const settings = result.value;
         setProvider(settings.provider ?? APP_CONSTANTS.AI.DEFAULT_PROVIDER);
         setApiKeys(settings.apiKeys ?? { ...DEFAULT_API_KEYS });
-        setOpenaiBaseUrl(settings.openaiBaseUrl || '');
         setModel(settings.model ?? '');
         setAiSettingsFromEnv(settings.aiSettingsFromEnv ?? false);
         setUseSunoTags(settings.useSunoTags);
@@ -91,6 +110,12 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
         setMaxMode(settings.maxMode);
         setLyricsMode(settings.lyricsMode);
         setStoryMode(settings.storyMode);
+        const promptSettings = normalizeLyricsPromptSettings(settings.lyricsPromptSettings);
+        setLyricsPrompt(promptSettings.lyricsPrompt);
+        setLyricsExtensionPrompt(promptSettings.lyricsExtensionPrompt);
+        setBannedLyricsWords(promptSettings.bannedLyricsWords.join('\n'));
+        setIncludeLyricsIntro(promptSettings.includeLyricsIntro);
+        setIncludeLyricsOutro(promptSettings.includeLyricsOutro);
       } catch (err: unknown) {
         log.error('fetchSettings:failed', err);
         setError('Unable to load settings.');
@@ -126,12 +151,26 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
           await rpcClient.saveAllSettings({
             provider,
             model,
-            openaiBaseUrl: openaiBaseUrl.trim() || null,
             useSunoTags,
             debugMode,
             maxMode,
             lyricsMode,
             storyMode,
+            lyricsPromptSettings: {
+              lyricsPrompt,
+              lyricsExtensionPrompt,
+              bannedLyricsWords: Array.from(
+                new Map(
+                  bannedLyricsWords
+                    .split(/\r?\n/)
+                    .map((word) => word.trim())
+                    .filter(Boolean)
+                    .map((word) => [word.toLocaleLowerCase(), word] as const)
+                ).values()
+              ),
+              includeLyricsIntro,
+              includeLyricsOutro,
+            },
             apiKeys: {
               groq: apiKeys.groq?.trim() || null,
               openai: apiKeys.openai?.trim() || null,
@@ -150,12 +189,16 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
     [
       provider,
       model,
-      openaiBaseUrl,
       useSunoTags,
       debugMode,
       maxMode,
       lyricsMode,
       storyMode,
+      lyricsPrompt,
+      lyricsExtensionPrompt,
+      bannedLyricsWords,
+      includeLyricsIntro,
+      includeLyricsOutro,
       apiKeys,
     ]
   );
@@ -164,12 +207,16 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
     provider,
     apiKeys,
     model,
-    openaiBaseUrl,
     useSunoTags,
     debugMode,
     maxMode,
     lyricsMode,
     storyMode,
+    lyricsPrompt,
+    lyricsExtensionPrompt,
+    bannedLyricsWords,
+    includeLyricsIntro,
+    includeLyricsOutro,
     showKey,
     saving,
     loading,
@@ -181,13 +228,17 @@ export function useSettingsModalState(isOpen: boolean): [SettingsModalState, Set
     setProvider,
     handleProviderChange,
     handleApiKeyChange,
-    setOpenaiBaseUrl,
     setModel,
     setUseSunoTags,
     setDebugMode,
     setMaxMode,
     setLyricsMode,
     setStoryMode,
+    setLyricsPrompt,
+    setLyricsExtensionPrompt,
+    setBannedLyricsWords,
+    setIncludeLyricsIntro,
+    setIncludeLyricsOutro,
     setShowKey,
     toggleShowKey,
     handleSave,

@@ -16,6 +16,14 @@ export const DEFAULT_API_KEYS: APIKeys = {
 
 import type { PromptMode, CreativeBoostMode } from '@shared/types/domain';
 
+export interface LyricsPromptSettings {
+  lyricsPrompt: string;
+  lyricsExtensionPrompt: string;
+  bannedLyricsWords: string[];
+  includeLyricsIntro: boolean;
+  includeLyricsOutro: boolean;
+}
+
 export interface AppConfig {
   provider: AIProvider;
   apiKeys: APIKeys;
@@ -30,4 +38,6 @@ export interface AppConfig {
   storyMode: boolean;
   promptMode: PromptMode;
   creativeBoostMode: CreativeBoostMode;
+  /** User-editable instructions and constraints for lyrics generation. */
+  lyricsPromptSettings?: LyricsPromptSettings;
 }

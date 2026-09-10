@@ -12,6 +12,7 @@ import { useSettingsModalState } from '@/hooks/use-settings-modal-state';
 
 import { ApiKeySection } from './api-key-section';
 import { FeatureToggles } from './feature-toggles';
+import { LyricsPromptSettingsSection } from './lyrics-prompt-settings';
 import { ModelSection } from './model-section';
 
 interface SettingsModalProps {
@@ -42,21 +43,18 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
           <ApiKeySection
             provider={state.provider}
             apiKeys={state.apiKeys}
-            openaiBaseUrl={state.openaiBaseUrl}
             showKey={state.showKey}
             loading={state.loading}
             aiSettingsFromEnv={state.aiSettingsFromEnv}
             error={state.error}
             onProviderChange={actions.handleProviderChange}
             onApiKeyChange={actions.handleApiKeyChange}
-            onOpenaiBaseUrlChange={actions.setOpenaiBaseUrl}
             onToggleShowKey={actions.toggleShowKey}
           />
 
           <ModelSection
             provider={state.provider}
             model={state.model}
-            openaiBaseUrl={state.openaiBaseUrl}
             loading={state.loading}
             readOnly={state.aiSettingsFromEnv}
             onModelChange={actions.setModel}
@@ -74,6 +72,20 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps): React.Re
             onLyricsModeChange={actions.setLyricsMode}
             onStoryModeChange={actions.setStoryMode}
             onDebugModeChange={actions.setDebugMode}
+          />
+
+          <LyricsPromptSettingsSection
+            lyricsPrompt={state.lyricsPrompt}
+            lyricsExtensionPrompt={state.lyricsExtensionPrompt}
+            bannedLyricsWords={state.bannedLyricsWords}
+            includeLyricsIntro={state.includeLyricsIntro}
+            includeLyricsOutro={state.includeLyricsOutro}
+            loading={state.loading}
+            onLyricsPromptChange={actions.setLyricsPrompt}
+            onLyricsExtensionPromptChange={actions.setLyricsExtensionPrompt}
+            onBannedLyricsWordsChange={actions.setBannedLyricsWords}
+            onIncludeLyricsIntroChange={actions.setIncludeLyricsIntro}
+            onIncludeLyricsOutroChange={actions.setIncludeLyricsOutro}
           />
         </div>
         <DialogFooter>

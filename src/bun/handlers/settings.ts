@@ -167,7 +167,6 @@ function createBulkHandlers(
         // back to the browser.
         apiKeys: aiSettingsFromEnv ? { ...DEFAULT_API_KEYS } : config.apiKeys,
         model: aiSettingsFromEnv ? aiEngine.getModelName() : config.model,
-        openaiBaseUrl: aiSettingsFromEnv ? aiEngine.getOpenaiBaseUrl() : config.openaiBaseUrl,
         ...(aiSettingsFromEnv ? { llmAvailable: aiEngine.isLLMAvailable() } : {}),
         ...(aiSettingsFromEnv ? { aiSettingsFromEnv: true } : {}),
         useSunoTags: config.useSunoTags,
@@ -177,6 +176,7 @@ function createBulkHandlers(
         storyMode: config.storyMode,
         promptMode: config.promptMode,
         creativeBoostMode: config.creativeBoostMode,
+        lyricsPromptSettings: config.lyricsPromptSettings,
       };
     },
     saveAllSettings: async (params) => {
@@ -192,6 +192,7 @@ function createBulkHandlers(
         storyMode,
         promptMode,
         creativeBoostMode,
+        lyricsPromptSettings,
       } = validate(SaveAllSettingsSchema, params);
 
       return withErrorHandling(
@@ -204,7 +205,7 @@ function createBulkHandlers(
                   provider,
                   apiKeys,
                   model,
-                  openaiBaseUrl: openaiBaseUrl ?? null,
+                  ...(openaiBaseUrl !== undefined ? { openaiBaseUrl } : {}),
                 }),
             useSunoTags,
             debugMode,
@@ -213,6 +214,7 @@ function createBulkHandlers(
             storyMode,
             ...(promptMode !== undefined ? { promptMode } : {}),
             ...(creativeBoostMode !== undefined ? { creativeBoostMode } : {}),
+            ...(lyricsPromptSettings !== undefined ? { lyricsPromptSettings } : {}),
           });
 
           if (!aiSettingsFromEnv) {
@@ -231,6 +233,9 @@ function createBulkHandlers(
           aiEngine.setMaxMode(maxMode);
           aiEngine.setLyricsMode(lyricsMode);
           aiEngine.setStoryMode(storyMode);
+          if (lyricsPromptSettings && typeof aiEngine.setLyricsPromptSettings === 'function') {
+            aiEngine.setLyricsPromptSettings(lyricsPromptSettings);
+          }
 
           return { success: true };
         },

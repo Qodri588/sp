@@ -13,9 +13,11 @@
 
 import { buildDirectModePromptWithRuntime } from '@bun/ai/direct-mode';
 import { remixLyrics } from '@bun/ai/remix';
+import { enforceLyricsSectionSettings } from '@bun/ai/lyrics-policy';
 import { createLogger } from '@shared/logger';
 import { traceDecision } from '@bun/trace';
 import { ValidationError } from '@shared/errors';
+import { hasDisabledLyricsSections } from '@shared/lyrics-settings';
 
 import {
   applyStoryModeIfEnabled,
@@ -32,6 +34,31 @@ import type { GenerationResult, RefinementConfig } from '@bun/ai/types';
 import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('Refinement');
+
+async function repairExistingLyricsIfNeeded(
+  currentLyrics: string | undefined,
+  config: RefinementConfig,
+  runtime: TraceRuntime | undefined,
+  traceLabel: string,
+  errorContext: string
+): Promise<string | undefined> {
+  if (
+    !currentLyrics ||
+    !hasDisabledLyricsSections(currentLyrics, config.getLyricsPromptSettings?.())
+  ) {
+    return currentLyrics;
+  }
+
+  return enforceLyricsSectionSettings({
+    lyrics: currentLyrics,
+    getModel: config.getModel,
+    promptSettings: config.getLyricsPromptSettings?.(),
+    context: 'Existing lyrics that must be kept coherent while applying the new section settings:',
+    trace: runtime?.trace,
+    traceLabel,
+    errorContext,
+  });
+}
 
 /**
  * Refine prompt deterministically without LLM calls.
@@ -118,6 +145,14 @@ export async function refineStyleOnly(
   // Use existing deterministic refinement for style changes
   const styleResult = await refinePromptDeterministic(options, config, runtime?.trace);
 
+  const lyrics = await repairExistingLyricsIfNeeded(
+    currentLyrics,
+    config,
+    runtime,
+    'lyrics.style-only',
+    'repair existing lyrics section settings'
+  );
+
   log.info('refineStyleOnly:complete', {
     promptLength: styleResult.text.length,
   });
@@ -126,7 +161,7 @@ export async function refineStyleOnly(
   const result: GenerationResult = {
     text: styleResult.text,
     title: currentTitle,
-    lyrics: currentLyrics,
+    lyrics,
     debugTrace: undefined,
   };
 
@@ -192,7 +227,8 @@ export async function refineLyricsOnly(
         trace: runtime?.trace,
         traceLabel: 'lyrics.bootstrap',
       },
-      feedback
+      feedback,
+      config.getLyricsPromptSettings?.()
     );
 
     log.info('refineLyricsOnly:bootstrap:complete', {
@@ -309,7 +345,8 @@ export async function refineWithDeterministicStyle(
         trace: runtime?.trace,
         traceLabel: 'lyrics.bootstrap',
       },
-      feedback
+      feedback,
+      config.getLyricsPromptSettings?.()
     );
 
     return {
@@ -347,6 +384,16 @@ export async function refinePromptDirectMode(
   );
   const shouldBootstrapLyrics = config.isLyricsMode() && !currentLyrics;
 
+  const preservedLyrics = config.isLyricsMode()
+    ? await repairExistingLyricsIfNeeded(
+        currentLyrics,
+        config,
+        runtime,
+        'lyrics.direct-mode',
+        'repair direct mode lyrics section settings'
+      )
+    : currentLyrics;
+
   const seedInput = getLyricsSeedInput(lyricsTopic, feedback);
   const topic = getOptionalLyricsTopic(lyricsTopic);
 
@@ -364,14 +411,15 @@ export async function refinePromptDirectMode(
           trace: runtime?.trace,
           traceLabel: 'lyrics.bootstrap',
         },
-        feedback
+        feedback,
+        config.getLyricsPromptSettings?.()
       )
     : null;
 
   return {
     text: enrichedPrompt,
     title: options.currentTitle,
-    lyrics: lyricsResult?.lyrics ?? currentLyrics,
+    lyrics: lyricsResult?.lyrics ?? preservedLyrics,
     debugTrace: undefined,
   };
 }

@@ -9,13 +9,51 @@
 
 import { runAIRequest } from '@bun/ai/request-runner';
 import { cleanLyrics } from '@bun/ai/utils';
+import { enforceLyricsSectionSettings } from '@bun/ai/lyrics-policy';
 import { createLogger } from '@shared/logger';
 import { APP_CONSTANTS } from '@shared/constants';
+import {
+  DEFAULT_LYRICS_PROMPT_SETTINGS,
+  fillLyricsPromptTemplate,
+  normalizeLyricsPromptSettings,
+} from '@shared/lyrics-settings';
 
 import type { RefinementConfig } from '@bun/ai/types';
+import type { LyricsPromptSettings } from '@shared/types';
 import type { TraceCollector } from '@bun/trace';
 
 const log = createLogger('LyricsRefinement');
+
+async function finalizeRefinedLyrics(options: {
+  refinedLyrics: string;
+  currentLyrics: string;
+  systemPrompt: string;
+  config: RefinementConfig;
+  timeoutMs: number;
+  promptSettings?: Partial<LyricsPromptSettings> | null;
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string };
+}): Promise<string> {
+  const {
+    refinedLyrics,
+    currentLyrics,
+    systemPrompt,
+    config,
+    timeoutMs,
+    promptSettings,
+    traceRuntime,
+  } = options;
+  return enforceLyricsSectionSettings({
+    lyrics: cleanLyrics(refinedLyrics) ?? cleanLyrics(currentLyrics),
+    getModel: config.getModel,
+    promptSettings,
+    systemPrompt,
+    context: 'Refined lyrics that must follow the current section settings:',
+    timeoutMs,
+    trace: traceRuntime?.trace,
+    traceLabel: traceRuntime?.traceLabel ?? 'lyrics.refinement',
+    errorContext: 'repair refined lyrics section settings',
+  });
+}
 
 /**
  * Build system prompt for lyrics refinement.
@@ -31,11 +69,25 @@ export function buildLyricsRefinementPrompt(
   genre: string,
   mood: string,
   useSunoTags: boolean,
-  maxMode: boolean
+  maxMode: boolean,
+  promptSettings: Partial<LyricsPromptSettings> = DEFAULT_LYRICS_PROMPT_SETTINGS
 ): string {
+  const settings = normalizeLyricsPromptSettings(promptSettings);
   const tagInstructions = useSunoTags
-    ? 'Use Suno-compatible section tags: [Verse], [Chorus], [Bridge], [Outro], etc.'
-    : 'Use standard section markers like [Verse 1], [Chorus], [Bridge].';
+    ? `Use Suno-compatible section tags: [Verse], [Chorus], [Bridge]${settings.includeLyricsIntro ? ', [Intro]' : ''}${settings.includeLyricsOutro ? ', [Outro]' : ''}, etc.`
+    : `Use standard section markers like [Verse 1], [Chorus], [Bridge]${settings.includeLyricsIntro ? ', [Intro]' : ''}${settings.includeLyricsOutro ? ', [Outro]' : ''}.`;
+  const excludedSections = [
+    settings.includeLyricsIntro ? null : 'Do not add an [INTRO] section.',
+    settings.includeLyricsOutro ? null : 'Do not add an [OUTRO] section.',
+  ]
+    .filter((rule): rule is string => Boolean(rule))
+    .join('\n- ');
+  const customPrompt = fillLyricsPromptTemplate(settings.lyricsPrompt, {
+    topic: 'the existing song topic',
+    genre,
+    mood,
+    bannedWords: settings.bannedLyricsWords.join(', '),
+  });
 
   const maxModeInstructions = maxMode
     ? `CRITICAL: The VERY FIRST LINE of your output MUST be exactly:
@@ -56,6 +108,8 @@ RULES:
 - Maintain the genre (${genre}) and mood (${mood})
 - ${tagInstructions}
 - Keep lines singable with natural rhythm
+${settings.bannedLyricsWords.length > 0 ? `- Never use these user-banned words: ${settings.bannedLyricsWords.join(', ')}\n` : ''}${excludedSections ? `- ${excludedSections}\n` : ''}- Follow these user-configured lyrics instructions exactly:
+${customPrompt}
 - Output ONLY the refined lyrics, no explanations
 
 IMPORTANT: Return only the refined lyrics text, nothing else.`;
@@ -106,7 +160,14 @@ export async function refineLyricsWithFeedback(
     maxMode,
   });
 
-  const systemPrompt = buildLyricsRefinementPrompt(genre, mood, config.getUseSunoTags(), maxMode);
+  const promptSettings = config.getLyricsPromptSettings?.();
+  const systemPrompt = buildLyricsRefinementPrompt(
+    genre,
+    mood,
+    config.getUseSunoTags(),
+    maxMode,
+    promptSettings
+  );
   const userPrompt = `Current lyrics:\n${currentLyrics}\n\nFeedback to apply:\n${feedback}${lyricsTopic ? `\n\nTopic/theme: ${lyricsTopic}` : ''}`;
 
   const refinedLyrics = await runAIRequest({
@@ -123,5 +184,15 @@ export async function refineLyricsWithFeedback(
     outputLength: refinedLyrics.length,
   });
 
-  return { lyrics: cleanLyrics(refinedLyrics) || currentLyrics };
+  return {
+    lyrics: await finalizeRefinedLyrics({
+      refinedLyrics,
+      currentLyrics,
+      systemPrompt,
+      config,
+      timeoutMs,
+      promptSettings,
+      traceRuntime,
+    }),
+  };
 }

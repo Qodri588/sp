@@ -128,7 +128,8 @@ export async function generateDirectMode(
           config.getModel,
           config.getUseSunoTags?.() ?? false,
           undefined,
-          runtime
+          runtime,
+          config.getLyricsPromptSettings?.()
         ),
     },
     config,
@@ -253,7 +254,8 @@ export async function generateCreativeBoost(
     config.getModel,
     config.getUseSunoTags?.() ?? false,
     undefined,
-    runtime
+    runtime,
+    config.getLyricsPromptSettings?.()
   );
 
   // 6. Try Story Mode transformation (returns null if not applicable)

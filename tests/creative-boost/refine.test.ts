@@ -1,6 +1,7 @@
 import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 
 import { setAiGenerateTextMock } from '../helpers/ai-mock';
+import { DEFAULT_LYRICS_PROMPT_SETTINGS } from '@shared/lyrics-settings';
 
 import type { AIEngine as AIEngineType } from '@bun/ai/engine';
 let generateTextCalls = 0;
@@ -155,6 +156,53 @@ This is how we thrive`,
     expect(result.text.length).toBeGreaterThan(20);
   });
 
+  it('passes lyrics section settings through standard Creative Boost refinement', async () => {
+    engine.setLyricsPromptSettings({
+      ...DEFAULT_LYRICS_PROMPT_SETTINGS,
+      bannedLyricsWords: [],
+      includeLyricsIntro: false,
+      includeLyricsOutro: false,
+    });
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      if (generateTextCalls === 1) {
+        return { text: '{"title":"Refined Rock","style":"refined rock"}' };
+      }
+      if (generateTextCalls === 2) {
+        return {
+          text: JSON.stringify({
+            intro: 'Opening arrangement',
+            verse: 'Driving guitar line',
+            chorus: 'Full band release',
+            outro: 'Soft ending',
+          }),
+        };
+      }
+      if (generateTextCalls === 3) {
+        return { text: '[INTRO]\nOld opening\n\n[VERSE]\nThe story starts\n\n[OUTRO]\nOld ending' };
+      }
+      return { text: '[VERSE]\nThe story starts\n\n[CHORUS]\nWe carry on' };
+    });
+
+    const result = await engine.refineCreativeBoost(
+      'original rock prompt',
+      'Original Title',
+      undefined,
+      'make it heavier',
+      'new beginning',
+      '',
+      ['rock'],
+      [],
+      false,
+      true
+    );
+
+    expect(result.lyrics).toBeDefined();
+    expect(result.lyrics).not.toContain('[INTRO]');
+    expect(result.lyrics).not.toContain('[OUTRO]');
+    expect(generateTextCalls).toBe(4);
+  });
+
   it('only makes LLM calls for title and lyrics in direct mode refine', async () => {
     await engine.refineCreativeBoost(
       'chill hop, lo-fi',
@@ -210,6 +258,37 @@ This is how we thrive`,
 
     expect(result.lyrics).toBeDefined();
     expect(result.lyrics).toContain('[VERSE]');
+    expect(generateTextCalls).toBe(1);
+  });
+
+  it('repairs preserved lyrics when Intro/Outro are disabled', async () => {
+    engine.setLyricsPromptSettings({
+      ...DEFAULT_LYRICS_PROMPT_SETTINGS,
+      bannedLyricsWords: [],
+      includeLyricsIntro: false,
+      includeLyricsOutro: false,
+    });
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      return { text: '[VERSE]\nThe story begins\n\n[CHORUS]\nWe carry on' };
+    });
+
+    const result = await engine.refineCreativeBoost(
+      'old-style, chill',
+      'Old Title',
+      '[INTRO]\nOld opening\n\n[VERSE]\nThe story begins\n\n[OUTRO]\nOld ending',
+      '',
+      'new beginning',
+      '',
+      [],
+      ['dream-pop'],
+      false,
+      true
+    );
+
+    expect(result.lyrics).not.toContain('[INTRO]');
+    expect(result.lyrics).not.toContain('[OUTRO]');
+    expect(result.lyrics).toContain('The story begins');
     expect(generateTextCalls).toBe(1);
   });
 });

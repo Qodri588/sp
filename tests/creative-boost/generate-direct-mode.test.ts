@@ -1,6 +1,7 @@
 import { describe, it, expect, mock, beforeEach, afterEach } from 'bun:test';
 
 import { setAiGenerateTextMock } from '../helpers/ai-mock';
+import { DEFAULT_LYRICS_PROMPT_SETTINGS } from '@shared/lyrics-settings';
 
 import type { AIEngine as AIEngineType } from '@bun/ai/engine';
 let generateTextCalls = 0;
@@ -145,6 +146,53 @@ Let the rhythm flow`,
     expect(result.lyrics).toContain('[VERSE]');
     expect(result.lyrics).toContain('[CHORUS]');
     expect(result.lyrics).not.toContain('///*****///');
+  });
+
+  it('uses the latest Intro/Outro settings after engine construction', async () => {
+    engine.setLyricsPromptSettings({
+      ...DEFAULT_LYRICS_PROMPT_SETTINGS,
+      bannedLyricsWords: [],
+      includeLyricsIntro: false,
+      includeLyricsOutro: false,
+    });
+    mockGenerateText.mockImplementation(async () => {
+      generateTextCalls++;
+      if (generateTextCalls === 1) return { text: 'No Intro Title' };
+      if (generateTextCalls === 2) {
+        return {
+          text: `[INTRO]
+Opening line
+
+[VERSE]
+The story begins
+
+[OUTRO]
+Closing line`,
+        };
+      }
+      return {
+        text: `[VERSE]
+The story begins
+
+[CHORUS]
+We keep moving on`,
+      };
+    });
+
+    const result = await engine.generateCreativeBoost(
+      50,
+      [],
+      ['indie rock'],
+      '',
+      'a new beginning',
+      false,
+      true
+    );
+
+    expect(result.lyrics).toBeDefined();
+    expect(result.lyrics).not.toContain('[INTRO]');
+    expect(result.lyrics).not.toContain('[OUTRO]');
+    expect(generateTextCalls).toBe(3);
   });
 
   it('uses deterministic generation when sunoStyles is empty', async () => {

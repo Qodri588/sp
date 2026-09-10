@@ -20,6 +20,7 @@ export function createConfigProxies(config: AIConfig): {
   setMaxMode: OmitThisParameter<typeof config.setMaxMode>;
   setLyricsMode: OmitThisParameter<typeof config.setLyricsMode>;
   setStoryMode: OmitThisParameter<typeof config.setStoryMode>;
+  setLyricsPromptSettings: OmitThisParameter<typeof config.setLyricsPromptSettings>;
   initialize: OmitThisParameter<typeof config.initialize>;
   isDebugMode: OmitThisParameter<typeof config.isDebugMode>;
   setOpenaiBaseUrl: OmitThisParameter<typeof config.setOpenaiBaseUrl>;
@@ -34,6 +35,7 @@ export function createConfigProxies(config: AIConfig): {
     setMaxMode: config.setMaxMode.bind(config),
     setLyricsMode: config.setLyricsMode.bind(config),
     setStoryMode: config.setStoryMode.bind(config),
+    setLyricsPromptSettings: config.setLyricsPromptSettings.bind(config),
     initialize: config.initialize.bind(config),
     isDebugMode: config.isDebugMode.bind(config),
     setOpenaiBaseUrl: config.setOpenaiBaseUrl.bind(config),

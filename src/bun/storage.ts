@@ -18,6 +18,8 @@ import {
   type PromptMode,
   type CreativeBoostMode,
 } from '@shared/types';
+import { cloneLyricsPromptSettings, DEFAULT_LYRICS_PROMPT_SETTINGS } from '@shared/lyrics-settings';
+import type { LyricsPromptSettings } from '@shared/types/config';
 
 // Type for the stored config (with encrypted API keys)
 type StoredConfig = Partial<{
@@ -32,6 +34,7 @@ type StoredConfig = Partial<{
   storyMode: boolean;
   promptMode: PromptMode;
   creativeBoostMode: CreativeBoostMode;
+  lyricsPromptSettings: Partial<LyricsPromptSettings>;
 }>;
 
 const log = createLogger('Storage');
@@ -47,6 +50,7 @@ const DEFAULT_CONFIG: AppConfig = {
   storyMode: APP_CONSTANTS.AI.DEFAULT_STORY_MODE,
   promptMode: APP_CONSTANTS.AI.DEFAULT_PROMPT_MODE,
   creativeBoostMode: 'simple',
+  lyricsPromptSettings: cloneLyricsPromptSettings(DEFAULT_LYRICS_PROMPT_SETTINGS),
 };
 
 export class StorageManager {
@@ -108,7 +112,11 @@ export class StorageManager {
   private async readConfigForWrite(): Promise<AppConfig> {
     const raw = await this.readJsonFile(this.configPath, 'config file');
     if (raw === null) {
-      return { ...DEFAULT_CONFIG, apiKeys: { ...DEFAULT_API_KEYS } };
+      return {
+        ...DEFAULT_CONFIG,
+        apiKeys: { ...DEFAULT_API_KEYS },
+        lyricsPromptSettings: cloneLyricsPromptSettings(DEFAULT_CONFIG.lyricsPromptSettings),
+      };
     }
     if (!isRecord(raw)) {
       throw new StorageError('Config file has invalid structure.', 'read');
@@ -191,6 +199,9 @@ export class StorageManager {
       storyMode: config.storyMode ?? DEFAULT_CONFIG.storyMode,
       promptMode: config.promptMode ?? DEFAULT_CONFIG.promptMode,
       creativeBoostMode: config.creativeBoostMode ?? DEFAULT_CONFIG.creativeBoostMode,
+      lyricsPromptSettings: cloneLyricsPromptSettings(
+        config.lyricsPromptSettings ?? DEFAULT_CONFIG.lyricsPromptSettings
+      ),
     };
   }
 

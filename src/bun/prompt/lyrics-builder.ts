@@ -1,29 +1,11 @@
 import { getBackingVocalsForGenre } from '@bun/prompt/vocal-descriptors';
+import {
+  DEFAULT_LYRICS_PROMPT_SETTINGS,
+  fillLyricsPromptTemplate,
+  normalizeLyricsPromptSettings,
+} from '@shared/lyrics-settings';
 
-/** Overused AI words that produce generic, cliché lyrics - banned from all lyrics. */
-const BANNED_CLICHE_WORDS = [
-  'shadows',
-  'echoes',
-  'neon',
-  'ignite',
-  'spark',
-  'whispers',
-  'shattered',
-  'chains',
-  'horizon',
-  'ocean',
-  'tides',
-  'ashes',
-  'embers',
-  'labyrinth',
-  'canvas',
-  'symphony',
-  'twilight',
-  'dawn',
-  'constellation',
-  'stardust',
-  'solitude',
-] as const;
+import type { LyricsPromptSettings } from '@shared/types';
 
 /** Cliché rhyming pairs that make lyrics feel predictable - banned. */
 const BANNED_CLICHE_RHYMES = [
@@ -35,13 +17,75 @@ const BANNED_CLICHE_RHYMES = [
   'heart/apart',
 ] as const;
 
-const CLICHE_LANGUAGE_RULES = `- Keep every line SHORT: 3-6 words per line
+const buildClicheLanguageRules = (
+  bannedWords: readonly string[]
+): string => `- Keep every line SHORT: 3-6 words per line
 - Split long sentences into multiple short lines for a vertical, stacked lyric structure
 - Use poetic, evocative imagery and concrete physical details instead of generic metaphors
-- NEVER use overused AI words: ${BANNED_CLICHE_WORDS.join(', ')}
+- NEVER use user-banned words: ${bannedWords.length > 0 ? bannedWords.join(', ') : '(none)'}
 - NEVER use cliché rhyming pairs: ${BANNED_CLICHE_RHYMES.join(', ')}`;
 
-export function buildLyricsSystemPrompt(maxMode: boolean, useSunoTags = false): string {
+function buildStructureRules(settings: LyricsPromptSettings): string {
+  const requiredSections = [
+    settings.includeLyricsIntro ? '1 intro' : null,
+    '2 verses',
+    '2 choruses',
+    '1 bridge',
+    settings.includeLyricsOutro ? '1 outro' : null,
+  ].filter((section): section is string => Boolean(section));
+  const excludedSections = [
+    settings.includeLyricsIntro ? null : 'an [INTRO] section',
+    settings.includeLyricsOutro ? null : 'an [OUTRO] section',
+  ].filter((section): section is string => Boolean(section));
+
+  return [
+    `- Include at least: ${requiredSections.join(', ')}`,
+    ...excludedSections.map((section) => `- Do NOT include ${section}, its tag, or its lyrics`),
+  ].join('\n');
+}
+
+function buildSectionTagList(settings: LyricsPromptSettings): string {
+  return [
+    settings.includeLyricsIntro ? '[INTRO]' : null,
+    '[VERSE]',
+    '[CHORUS]',
+    '[BRIDGE]',
+    settings.includeLyricsOutro ? '[OUTRO]' : null,
+  ]
+    .filter((tag): tag is string => Boolean(tag))
+    .join(', ');
+}
+
+function buildOutputFormat(settings: LyricsPromptSettings, maxMode: boolean): string {
+  const sections = [
+    settings.includeLyricsIntro
+      ? '[INTRO]\n<short lines (3-6 words each) that set up the story>'
+      : null,
+    '[VERSE]\n<short lines (3-6 words each) introducing the situation/emotion>',
+    '[CHORUS]\n<short lines (3-6 words each) capturing the core message/feeling>',
+    '[VERSE]\n<short lines (3-6 words each) deepening the story or emotion>',
+    '[CHORUS]\n<repeat or variation of chorus>',
+    '[BRIDGE]\n<short lines (3-6 words each) with a contrasting/revelation/turning point>',
+    settings.includeLyricsOutro
+      ? '[OUTRO]\n<short lines (3-6 words each) closing/resolution>'
+      : null,
+  ].filter((section): section is string => Boolean(section));
+
+  return `${maxMode ? '///*****///\n' : ''}${sections.join('\n\n')}`;
+}
+
+export function buildLyricsSystemPrompt(
+  maxMode: boolean,
+  useSunoTags = false,
+  promptSettings: Partial<LyricsPromptSettings> = DEFAULT_LYRICS_PROMPT_SETTINGS
+): string {
+  const settings = normalizeLyricsPromptSettings(promptSettings);
+  const customPrompt = fillLyricsPromptTemplate(settings.lyricsPrompt, {
+    topic: "the user's topic",
+    genre: 'the selected genre',
+    mood: 'the selected mood',
+    bannedWords: settings.bannedLyricsWords.join(', '),
+  });
   const maxModeInstructions = maxMode
     ? `CRITICAL REQUIREMENT: The VERY FIRST LINE of your output MUST be exactly:
 ///*****///
@@ -88,13 +132,16 @@ NARRATIVE GUIDELINES:
 - Each verse should advance the story or deepen the emotional journey
 
 LANGUAGE RULES (STRICT):
-${CLICHE_LANGUAGE_RULES}
+${buildClicheLanguageRules(settings.bannedLyricsWords)}
 
 STRUCTURE REQUIREMENTS:
-- Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
-- Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
+- Use section tags: ${buildSectionTagList(settings)}
+${buildStructureRules(settings)}
 - The chorus should be memorable and repeatable
 - Section length is FREE - use as many lines as the story needs (no limit)
+
+USER-CONFIGURED LYRICS INSTRUCTIONS (MANDATORY):
+${customPrompt}
 
 EXTENDED TAGS (optional - your creative choice):
 - You may freely add extra tags to shape the song, with NO fixed template
@@ -128,26 +175,7 @@ ABSTRACT INTERPRETATION:
 - But ALWAYS stay connected to the user's intended subject matter
 
 OUTPUT FORMAT:
-${maxMode ? '///*****///\n' : ''}[INTRO]
-<short lines (3-6 words each) that set up the story>
-
-[VERSE]
-<short lines (3-6 words each) introducing the situation/emotion>
-
-[CHORUS]
-<short lines (3-6 words each) capturing the core message/feeling>
-
-[VERSE]
-<short lines (3-6 words each) deepening the story or emotion>
-
-[CHORUS]
-<repeat or variation of chorus>
-
-[BRIDGE]
-<short lines (3-6 words each) with a contrasting/revelation/turning point>
-
-[OUTRO]
-<short lines (3-6 words each) closing/resolution>
+${buildOutputFormat(settings, maxMode)}
 
 OUTPUT ONLY THE LYRICS. No explanations, no titles, no additional text.`;
 }
@@ -169,8 +197,16 @@ export function buildLyricsUserPrompt(
   genre: string,
   mood: string,
   useSunoTags = false,
-  maxMode = false
+  maxMode = false,
+  promptSettings: Partial<LyricsPromptSettings> = DEFAULT_LYRICS_PROMPT_SETTINGS
 ): string {
+  const settings = normalizeLyricsPromptSettings(promptSettings);
+  const customPrompt = fillLyricsPromptTemplate(settings.lyricsPrompt, {
+    topic: description,
+    genre,
+    mood,
+    bannedWords: settings.bannedLyricsWords.join(', '),
+  });
   let backingVocalGuidance = '';
 
   if (useSunoTags) {
@@ -195,15 +231,17 @@ export function buildLyricsUserPrompt(
 - Emotional tone: ${mood}${backingVocalGuidance}
 
 CRITICAL RULES (MANDATORY - do not skip any):
+- User-configured lyrics instructions are mandatory. Follow them exactly:
+${customPrompt}
 - Output ONLY the lyrics - NO title, NO song name, NO explanations, NO extra text
 - Do NOT write meta-lyrics about music, songwriting, instruments, or the creative process
 - Do NOT use words like "chord", "melody", "rhythm", "verse", "chorus" in the lyrics themselves
-- Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
-- Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
+- Use section tags: ${buildSectionTagList(settings)}
+${buildStructureRules(settings)}
 - Section length is FREE - use as many lines as the story needs (no limit)
 - Keep EVERY line short: 3-6 words per line (split long sentences into multiple lines)
 - Use poetic, evocative imagery with concrete physical details - never generic metaphors
-- NEVER use overused AI words: ${BANNED_CLICHE_WORDS.join(', ')}
+- NEVER use user-banned words: ${settings.bannedLyricsWords.length > 0 ? settings.bannedLyricsWords.join(', ') : '(none)'}
 - NEVER use cliché rhyming pairs: ${BANNED_CLICHE_RHYMES.join(', ')}
 - You MAY add extended tags freely wherever they fit (e.g. [Pre-Chorus], [Female Vocal], [Instrumental], [Guitar Solo], [Spoken Word], [Build Up]) - optional, your creative choice, no fixed template
 - Pick extended tags that MATCH the genre, vibe, and story (rock -> [Guitar Solo], ballad -> [Piano Break], R&B -> [Ad-lib], electronic -> [Build Up], jazz -> [Sax Solo], gospel -> [Choir], latin -> [Percussion Break])

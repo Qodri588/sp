@@ -1,4 +1,5 @@
 import { DEFAULT_API_KEYS, type AppConfig } from '@shared/types';
+import { cloneLyricsPromptSettings } from '@shared/lyrics-settings';
 
 import { buildGenerationPolicy } from './policy';
 
@@ -19,6 +20,7 @@ export function createGenerationRequestConfig(
     maxMode: config.maxMode,
     lyricsMode: config.lyricsMode,
     storyMode: config.storyMode,
+    lyricsPromptSettings: cloneLyricsPromptSettings(config.lyricsPromptSettings),
     apiKeys: { ...DEFAULT_API_KEYS, ...config.apiKeys },
   };
 
@@ -36,5 +38,6 @@ export function createGenerationRequestConfig(
     isStoryMode: () => requestConfig.storyMode,
     isLLMAvailable: () => policy.llmAvailable,
     getUseSunoTags: () => requestConfig.useSunoTags,
+    getLyricsPromptSettings: () => cloneLyricsPromptSettings(requestConfig.lyricsPromptSettings),
   };
 }

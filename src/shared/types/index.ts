@@ -18,7 +18,7 @@ export {
 } from '@shared/types/result';
 
 // Config types
-export type { AIProvider, APIKeys, AppConfig } from '@shared/types/config';
+export type { AIProvider, APIKeys, AppConfig, LyricsPromptSettings } from '@shared/types/config';
 export { DEFAULT_API_KEYS } from '@shared/types/config';
 
 // Domain types

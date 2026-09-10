@@ -10,11 +10,12 @@ import {
 } from '@bun/prompt/lyrics-builder';
 import { APP_CONSTANTS, DEFAULT_GENRE } from '@shared/constants';
 import { getErrorMessage } from '@shared/errors';
-import { cleanLyrics } from '@bun/ai/utils';
+import { enforceLyricsSectionSettings } from '@bun/ai/lyrics-policy';
 import { z } from 'zod';
 
 import type { TraceCollector } from '@bun/trace';
 import type { LanguageModel } from 'ai';
+import type { LyricsPromptSettings } from '@shared/types';
 
 /** All available genre keys from the registry */
 const ALL_GENRE_KEYS = Object.keys(GENRE_REGISTRY) as (keyof typeof GENRE_REGISTRY)[];
@@ -36,6 +37,36 @@ export interface TitleResult {
 export interface LyricsResult {
   lyrics: string;
   debugInfo: ContentDebugInfo;
+}
+
+async function generateLyricsText(options: {
+  getModel: () => LanguageModel;
+  systemPrompt: string;
+  userPrompt: string;
+  timeoutMs: number;
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string };
+  promptSettings?: LyricsPromptSettings;
+}): Promise<string> {
+  const { getModel, systemPrompt, userPrompt, timeoutMs, traceRuntime, promptSettings } = options;
+  const text = await runAIRequest({
+    getModel,
+    systemPrompt,
+    userPrompt,
+    errorContext: 'generate lyrics',
+    timeoutMs,
+    trace: traceRuntime?.trace,
+    traceLabel: traceRuntime?.traceLabel,
+  });
+  return enforceLyricsSectionSettings({
+    lyrics: text,
+    getModel,
+    systemPrompt,
+    promptSettings,
+    timeoutMs,
+    trace: traceRuntime?.trace,
+    traceLabel: traceRuntime?.traceLabel ?? 'lyrics.generate',
+    errorContext: 'repair lyrics section settings',
+  });
 }
 
 /**
@@ -125,24 +156,31 @@ export async function generateLyrics(
   getModel: () => LanguageModel,
   useSunoTags = false,
   timeoutMs: number = APP_CONSTANTS.AI.TIMEOUT_MS,
-  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string }
+  traceRuntime?: { readonly trace?: TraceCollector; readonly traceLabel?: string },
+  promptSettings?: LyricsPromptSettings
 ): Promise<LyricsResult> {
-  const systemPrompt = buildLyricsSystemPrompt(maxMode, useSunoTags);
-  const userPrompt = buildLyricsUserPrompt(description, genre, mood, useSunoTags, maxMode);
+  const systemPrompt = buildLyricsSystemPrompt(maxMode, useSunoTags, promptSettings);
+  const userPrompt = buildLyricsUserPrompt(
+    description,
+    genre,
+    mood,
+    useSunoTags,
+    maxMode,
+    promptSettings
+  );
   const debugInfo = { systemPrompt, userPrompt };
 
   try {
-    const text = await runAIRequest({
+    const lyrics = await generateLyricsText({
       getModel,
       systemPrompt,
       userPrompt,
-      errorContext: 'generate lyrics',
       timeoutMs,
-      trace: traceRuntime?.trace,
-      traceLabel: traceRuntime?.traceLabel,
+      traceRuntime,
+      promptSettings,
     });
 
-    return { lyrics: cleanLyrics(text) ?? text.trim(), debugInfo };
+    return { lyrics, debugInfo };
   } catch (error: unknown) {
     log.warn('generateLyrics:failed', { error: getErrorMessage(error) });
     throw error;

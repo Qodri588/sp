@@ -56,6 +56,7 @@ export {
   CreativeBoostModeSchema,
   SetPromptModeSchema,
   SetCreativeBoostModeSchema,
+  LyricsPromptSettingsSchema,
   SaveAllSettingsSchema,
   type SetApiKeyInput,
   type SetModelInput,

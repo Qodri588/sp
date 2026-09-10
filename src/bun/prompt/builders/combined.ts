@@ -5,6 +5,13 @@
 
 import { buildMaxModeSystemPrompt } from './max-mode';
 import { buildSystemPrompt } from './standard';
+import {
+  DEFAULT_LYRICS_PROMPT_SETTINGS,
+  fillLyricsPromptTemplate,
+  normalizeLyricsPromptSettings,
+} from '@shared/lyrics-settings';
+
+import type { LyricsPromptSettings } from '@shared/types';
 
 /**
  * Refinement context for refining existing prompts
@@ -71,6 +78,60 @@ OUTPUT FORMAT - Return valid JSON:
 IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
 }
 
+function buildLyricsSettingsInstructions(promptSettings: Partial<LyricsPromptSettings>): {
+  sectionTags: string;
+  requiredSections: string;
+  excludedSections: string;
+  rules: string;
+} {
+  const settings = normalizeLyricsPromptSettings(promptSettings);
+  const customLyricsPrompt = fillLyricsPromptTemplate(settings.lyricsPrompt, {
+    topic: 'the lyrics topic',
+    genre: 'the selected genre',
+    mood: 'the selected mood',
+    bannedWords: settings.bannedLyricsWords.join(', '),
+  });
+  const sectionTags = [
+    settings.includeLyricsIntro ? '[INTRO]' : null,
+    '[VERSE]',
+    '[CHORUS]',
+    '[BRIDGE]',
+    settings.includeLyricsOutro ? '[OUTRO]' : null,
+  ]
+    .filter((tag): tag is string => Boolean(tag))
+    .join(', ');
+  const requiredSections = [
+    settings.includeLyricsIntro ? '1 intro' : null,
+    '2 verses',
+    '2 choruses',
+    '1 bridge',
+    settings.includeLyricsOutro ? '1 outro' : null,
+  ]
+    .filter((section): section is string => Boolean(section))
+    .join(', ');
+  const excludedSections = [
+    settings.includeLyricsIntro ? null : 'an [INTRO] section, its tag, or its lyrics',
+    settings.includeLyricsOutro ? null : 'an [OUTRO] section, its tag, or its lyrics',
+  ]
+    .filter((section): section is string => Boolean(section))
+    .map((section) => `- Do NOT include ${section}`)
+    .join('\n');
+  const rules = [
+    `- Use only these primary section tags: ${sectionTags}`,
+    `- Include at least: ${requiredSections}`,
+    excludedSections,
+    settings.bannedLyricsWords.length > 0
+      ? `- Never use these user-banned words: ${settings.bannedLyricsWords.join(', ')}`
+      : '',
+    '- Follow these user-configured lyrics instructions exactly:',
+    customLyricsPrompt,
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return { sectionTags, requiredSections, excludedSections, rules };
+}
+
 /**
  * Combined system prompt for generating style prompt + title + lyrics in one call
  */
@@ -78,11 +139,18 @@ export function buildCombinedWithLyricsSystemPrompt(
   maxChars: number,
   useSunoTags: boolean,
   maxMode: boolean,
-  refinement?: RefinementContext
+  refinement?: RefinementContext,
+  promptSettings: Partial<LyricsPromptSettings> = DEFAULT_LYRICS_PROMPT_SETTINGS
 ): string {
   const basePrompt = maxMode
     ? buildMaxModeSystemPrompt(maxChars)
     : buildSystemPrompt(maxChars, useSunoTags);
+  const {
+    sectionTags,
+    requiredSections,
+    excludedSections,
+    rules: lyricsSettingsRules,
+  } = buildLyricsSettingsInstructions(promptSettings);
 
   const lyricsFormat = maxMode
     ? `The lyrics MUST start with: ///*****///
@@ -103,14 +171,14 @@ Then section tags on subsequent lines.`
     const freshLyricsRequirements = !(existingLyrics && existingLyrics.length > 0)
       ? `
 LYRICS REQUIREMENTS FOR NEW LYRICS:
-- Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
+- Use section tags: ${sectionTags}
 - Each section should have 2-4 lines
-- Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
+- Include at least: ${requiredSections}
 - Lyrics should be evocative, poetic, and emotionally resonant
 - Match the genre's typical lyrical style`
       : '';
 
-    const additionalInstructions = [lyricsFormat, freshLyricsRequirements]
+    const additionalInstructions = [lyricsFormat, lyricsSettingsRules, freshLyricsRequirements]
       .filter(Boolean)
       .join('\n');
 
@@ -158,15 +226,16 @@ OUTPUT FORMAT - Return valid JSON:
 {
   "prompt": "<the complete music prompt as described above>",
   "title": "<a short, evocative 1-5 word song title that matches the mood and genre>",
-  "lyrics": "<complete song lyrics with section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]>"
+  "lyrics": "<complete song lyrics using the allowed section tags>"
 }
 
 LYRICS REQUIREMENTS:
-- Use section tags: [INTRO], [VERSE], [CHORUS], [BRIDGE], [OUTRO]
+- Use section tags: ${sectionTags}
 - Each section should have 2-4 lines
-- Include at least: 1 intro, 2 verses, 2 choruses, 1 bridge, 1 outro
+- Include at least: ${requiredSections}
 - Lyrics should be evocative, poetic, and emotionally resonant
 - Match the genre's typical lyrical style
+${excludedSections}
 
 IMPORTANT: Output ONLY the JSON object, no markdown code blocks or explanations.`;
 }

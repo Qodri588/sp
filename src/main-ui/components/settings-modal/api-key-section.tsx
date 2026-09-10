@@ -14,34 +14,28 @@ const selectClassName =
 interface ApiKeySectionProps {
   provider: AIProvider;
   apiKeys: APIKeys;
-  openaiBaseUrl: string;
   showKey: boolean;
   loading: boolean;
   aiSettingsFromEnv: boolean;
   error: string | null;
   onProviderChange: (provider: AIProvider) => void;
   onApiKeyChange: (value: string) => void;
-  onOpenaiBaseUrlChange: (value: string) => void;
   onToggleShowKey: () => void;
 }
 
-// eslint-disable-next-line max-lines-per-function
 export function ApiKeySection({
   provider,
   apiKeys,
-  openaiBaseUrl,
   showKey,
   loading,
   aiSettingsFromEnv,
   error,
   onProviderChange,
   onApiKeyChange,
-  onOpenaiBaseUrlChange,
   onToggleShowKey,
 }: ApiKeySectionProps): ReactElement {
   const currentProvider = PROVIDERS.find((p) => p.id === provider) ?? PROVIDERS[0];
   const currentApiKey = apiKeys[provider] || '';
-  const showBaseUrl = provider === 'openai';
 
   return (
     <>
@@ -63,26 +57,6 @@ export function ApiKeySection({
         </select>
         <p className="ui-helper">Select your preferred AI provider</p>
       </div>
-
-      {showBaseUrl && (
-        <div className="space-y-2">
-          <SectionLabel>OpenAI-compatible Base URL</SectionLabel>
-          <Input
-            type="text"
-            value={openaiBaseUrl}
-            disabled={aiSettingsFromEnv}
-            onChange={(e) => {
-              onOpenaiBaseUrlChange(e.target.value);
-            }}
-            placeholder="https://api.9router.com/v1 (optional)"
-            className="bg-input"
-          />
-          <p className="ui-helper">
-            Leave empty to use the official OpenAI API. Set this to any OpenAI-compatible endpoint
-            (e.g. 9router, DeepSeek, Kimi).
-          </p>
-        </div>
-      )}
 
       <div className="space-y-2">
         <SectionLabel>{currentProvider.name} API Key</SectionLabel>
@@ -108,9 +82,9 @@ export function ApiKeySection({
         </div>
         {aiSettingsFromEnv ? (
           <p className="ui-helper text-emerald-500">
-            AI provider, endpoint, and API key are loaded securely from the server&apos;s .env file.
+            AI provider and API key are loaded securely from the server&apos;s .env file.
           </p>
-        ) : !showBaseUrl ? (
+        ) : (
           <p className="ui-helper">
             Get your key from{' '}
             <a
@@ -122,7 +96,7 @@ export function ApiKeySection({
               {currentProvider.keyUrl.replace('https://', '')}
             </a>
           </p>
-        ) : null}
+        )}
         {!aiSettingsFromEnv && !currentApiKey && !loading && (
           <p className="ui-helper text-amber-500">
             No API key configured for {currentProvider.name}. Generation will fail.

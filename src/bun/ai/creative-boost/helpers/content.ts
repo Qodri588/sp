@@ -19,6 +19,7 @@ import { generateDeterministicTitle } from '@bun/prompt/title';
 
 import type { TraceRuntime } from '@bun/ai/generation/types';
 import type { LanguageModel } from 'ai';
+import type { LyricsPromptSettings } from '@shared/types';
 
 const log = createLogger('CreativeBoostHelpers');
 
@@ -84,15 +85,10 @@ export async function resolveGenreForCreativeBoost(
 
   // Priority 3: Detect genre from lyrics topic if lyrics mode is ON and topic provided
   if (withLyrics && lyricsTopic?.trim()) {
-    const result = await detectGenreFromTopic(
-      lyricsTopic.trim(),
-      getModel,
-      undefined,
-      {
-        trace: runtime?.trace,
-        traceLabel: 'genre.detectFromTopic',
-      }
-    );
+    const result = await detectGenreFromTopic(lyricsTopic.trim(), getModel, undefined, {
+      trace: runtime?.trace,
+      traceLabel: 'genre.detectFromTopic',
+    });
     log.info('resolveGenreForCreativeBoost:fromTopic', { topic: lyricsTopic, genre: result.genre });
     return {
       genres: [result.genre],
@@ -175,7 +171,8 @@ export async function generateCreativeBoostLyrics(
   getModel: () => LanguageModel,
   useSunoTags: boolean,
   _ollamaEndpoint?: string,
-  runtime?: TraceRuntime
+  runtime?: TraceRuntime,
+  promptSettings?: LyricsPromptSettings
 ): Promise<{ lyrics?: string; debugInfo?: GenerationDebugInfo }> {
   if (!withLyrics) {
     return {};
@@ -193,7 +190,8 @@ export async function generateCreativeBoostLyrics(
     {
       trace: runtime?.trace,
       traceLabel: 'lyrics.generate',
-    }
+    },
+    promptSettings
   );
 
   return { lyrics: result.lyrics, debugInfo: result.debugInfo };
@@ -211,7 +209,8 @@ export async function generateLyricsForCreativeBoost(
   getModel: () => LanguageModel,
   useSunoTags: boolean,
   _ollamaEndpoint?: string,
-  runtime?: TraceRuntime
+  runtime?: TraceRuntime,
+  promptSettings?: LyricsPromptSettings
 ): Promise<{
   lyrics: string | undefined;
   debugInfo?: { systemPrompt: string; userPrompt: string };
@@ -232,7 +231,8 @@ export async function generateLyricsForCreativeBoost(
     {
       trace: runtime?.trace,
       traceLabel: 'lyrics.generate',
-    }
+    },
+    promptSettings
   );
 
   return {

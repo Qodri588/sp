@@ -55,7 +55,9 @@ export async function postProcessCreativeBoostResponse(
     withLyrics,
     config.getModel,
     config.getUseSunoTags?.() ?? false,
-    ollamaEndpoint
+    ollamaEndpoint,
+    undefined,
+    config.getLyricsPromptSettings?.()
   );
 
   return {

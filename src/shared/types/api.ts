@@ -1,7 +1,7 @@
 // API Request/Response types
 
 import type { MoodCategory } from '@bun/mood';
-import type { AIProvider, APIKeys } from '@shared/types/config';
+import type { AIProvider, APIKeys, LyricsPromptSettings } from '@shared/types/config';
 import type {
   PromptSession,
   PromptMode,
@@ -172,13 +172,13 @@ export interface SaveAllSettingsParams {
   storyMode: boolean;
   promptMode?: PromptMode;
   creativeBoostMode?: CreativeBoostMode;
+  lyricsPromptSettings?: LyricsPromptSettings;
 }
 
 export interface GetAllSettingsResponse {
   provider: AIProvider;
   apiKeys: APIKeys;
   model: string;
-  openaiBaseUrl?: string | null;
   llmAvailable?: boolean;
   aiSettingsFromEnv?: boolean;
   useSunoTags: boolean;
@@ -188,6 +188,7 @@ export interface GetAllSettingsResponse {
   storyMode: boolean;
   promptMode: PromptMode;
   creativeBoostMode: CreativeBoostMode;
+  lyricsPromptSettings?: LyricsPromptSettings;
 }
 
 // Session endpoints

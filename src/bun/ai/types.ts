@@ -7,7 +7,7 @@
  * @module ai/types
  */
 
-import type { AIProvider, TraceRun } from '@shared/types';
+import type { AIProvider, LyricsPromptSettings, TraceRun } from '@shared/types';
 import type { LanguageModel } from 'ai';
 
 export interface GenerationResult {
@@ -25,6 +25,7 @@ export interface EngineConfig {
   isLyricsMode?: () => boolean;
   isLLMAvailable?: () => boolean;
   getUseSunoTags?: () => boolean;
+  getLyricsPromptSettings?: () => LyricsPromptSettings;
 }
 
 export interface GenerationConfig {
@@ -40,6 +41,7 @@ export interface GenerationConfig {
   isUseLocalLLM: () => boolean;
   getOllamaEndpoint: () => string | undefined;
   getOllamaEndpointIfLocal: () => string | undefined;
+  getLyricsPromptSettings?: () => LyricsPromptSettings;
 }
 
 export interface RefinementConfig extends GenerationConfig {

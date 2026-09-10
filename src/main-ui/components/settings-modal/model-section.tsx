@@ -7,7 +7,6 @@ import type { ReactElement } from 'react';
 interface ModelSectionProps {
   provider: AIProvider;
   model: string;
-  openaiBaseUrl: string;
   loading: boolean;
   readOnly: boolean;
   onModelChange: (model: string) => void;
